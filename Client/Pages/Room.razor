@@ -1,9 +1,11 @@
-﻿@page "/Room/{roomId}/{rows}"
-<h3>This is the room manager , still working on it</h3>
+﻿@page "/Room/{roomId}"
+<h3>This is the room manager id: @roomId, still working on it</h3>
 
+
+@*Estas en : @id2*@
 
 
 @code {
-    [Parameter] public string? roomId { set; get; }
-    [Parameter] public int? rows { set;  get; }
+    //[Parameter] public string id2 { set; get; }
+    [Parameter] public string roomId { set; get; }
 }

@@ -1,11 +1,11 @@
 ﻿@page "/Login"
-@inject NavigationManager NavManager
+@inject NavigationManager UriHelp
 
 <h1>Hello, @(playerName ?? "Unknown")!</h1>
 
 
 @{ <p> @(playerName == null ? "Welcome to the brand new minesweeper." : "Are you ready?" )</p>}
- 
+
 
     <br />
 
@@ -21,13 +21,13 @@
     @if( State == States.Config ) {
         <h2> Now its time to create the room !</h2>
         <label for="rows"> Nº Rows</label>
-        <input type="number" id="rows" @bind="rows"  />
-        <button @onclick="@GoToRoom" > Create Room  </button>
+        <input type="number" id="rows" @bind="rows" />
+        <button @onclick="@GoToRoom"> Create Room  </button>
 
-        //este boton me ha humillao pq no se le puede pasar un string
-        @*<button @onclick="()=>NavManager.NavigateTo("/Room")"> Create Room  </button>*@
-        //el caso que este muchacho dice q esto no se vale
-
+        <br />
+        <h2> Or join one already created </h2>
+        <input type="text" id="joinRoomId" @bind="joinRoomId"  placeholder=" Enter room code" />
+        <button @onclick="JoinRoom"> Join Room  </button>
     }
 
 
@@ -39,17 +39,17 @@
         public States State { get; set; } = States.IntroducirNombre;
         public string playerName;
         //state1 params: Config room
-        public int rows=10;
-        public string roomId;
-
+        public int rows = 10;
+        
+        public string joinRoomId;
 
         public void GoToRoom() {
-            roomId = RoomCoderGenerator(5);
-            
-            NavManager.NavigateTo($"/Room/?roomId={roomId}&rows={rows}");
+            String RoomId = RoomCoderGenerator(5);
+
+            //NavManager.NavigateTo($"/Room/?roomId={roomId}&rows={rows}");
+
+            UriHelp.NavigateTo($"Room/{RoomId}");
         }
-
-
 
         public string RoomCoderGenerator( int length ) {
             Random random = new Random();
@@ -57,5 +57,10 @@
             return new string(Enumerable.Repeat(chars,length)
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
+
+        public void JoinRoom() {
+            UriHelp.NavigateTo($"../Room/{joinRoomId}");
+        }
+
 
     }
