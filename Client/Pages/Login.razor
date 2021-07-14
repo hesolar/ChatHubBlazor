@@ -45,6 +45,7 @@
 
         public void GoToRoom() {
             roomId = RoomCoderGenerator(5);
+            
             NavManager.NavigateTo($"/Room/?roomId={roomId}&rows={rows}");
         }
 
