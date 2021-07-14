@@ -45,9 +45,6 @@
 
         public void GoToRoom() {
             String RoomId = RoomCoderGenerator(5);
-
-            //NavManager.NavigateTo($"/Room/?roomId={roomId}&rows={rows}");
-
             UriHelp.NavigateTo($"Room/{RoomId}");
         }
 

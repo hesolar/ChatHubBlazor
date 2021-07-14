@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using BlazorStrap;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +18,7 @@ namespace BlazorApp.Client
             builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
             await builder.Build().RunAsync();
+            builder.Services.AddBootstrapCSS();
         }
     }
 }
