@@ -1,0 +1,48 @@
+﻿@page "/Room/{roomId}"
+@using BlazorStrap
+@using Client.Model.minesweeper
+
+<h3>This is the room manager id: @roomId, still working on it:</h3>
+
+<BSContainer>
+
+    <h3>Board</h3>
+    <BSContainer>
+
+        @for( int x = 0; x < rows; x++ ) {
+            int xa = x;
+        <BSRow>
+            
+            @for( int y = 0; y < rows; y++ ) {
+
+
+
+                int ya = y;
+
+
+                <BSCol><BSButton @onclick="()=>move(xa,ya)"  Color="Color.Light">@xa @ya</BSButton> </BSCol>
+
+            }
+        </BSRow>
+        }
+    </BSContainer>
+
+
+
+</BSContainer>
+
+@code {
+    [Parameter] public string roomId { set; get; }
+    int rows = 5;
+    int cx, cy;
+    //BSButton boton;
+
+    MinesweeperLogic game = new MinesweeperLogic(5);
+    private void move(int x,int y) {
+        bool b= game.MakeMove(x,y);
+        //boton.Color = Color.Danger;
+
+
+    }
+
+}

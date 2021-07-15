@@ -18,7 +18,7 @@ namespace BlazorApp.Client
             builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(baseAddress) });
 
             await builder.Build().RunAsync();
-            builder.Services.AddBootstrapCSS();
+            builder.Services.AddBootstrapCss();
         }
     }
 }

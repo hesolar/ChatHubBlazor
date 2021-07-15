@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30308.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{52AF5162-0ED3-42DC-A246-39C57DBAA3C7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorGames", "..\..\..\Downloads\BlazorGames-master\BlazorGames\BlazorGames.csproj", "{743E7FBC-29EE-4CAB-BFFC-16B3171A4C52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorGames", "..\..\..\Downloads\BlazorGames-master\BlazorGames\BlazorGames.csproj", "{9332C6ED-657B-448B-B4D2-295DF5C091A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{52AF5162-0ED3-42DC-A246-39C57DBAA3C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52AF5162-0ED3-42DC-A246-39C57DBAA3C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52AF5162-0ED3-42DC-A246-39C57DBAA3C7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{743E7FBC-29EE-4CAB-BFFC-16B3171A4C52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{743E7FBC-29EE-4CAB-BFFC-16B3171A4C52}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{743E7FBC-29EE-4CAB-BFFC-16B3171A4C52}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{743E7FBC-29EE-4CAB-BFFC-16B3171A4C52}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9332C6ED-657B-448B-B4D2-295DF5C091A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9332C6ED-657B-448B-B4D2-295DF5C091A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9332C6ED-657B-448B-B4D2-295DF5C091A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9332C6ED-657B-448B-B4D2-295DF5C091A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

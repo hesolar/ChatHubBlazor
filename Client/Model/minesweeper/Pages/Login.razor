@@ -1,0 +1,65 @@
+﻿@page "/Login"
+@inject NavigationManager UriHelp
+
+<h1>Hello, @(Name ?? "Unknown")!</h1>
+
+
+@{ <p> @(Name == null ? "Welcome to the brand new minesweeper." : "Are you ready?" )</p>}
+
+
+<br />
+
+
+@* introducir nombre del jugador 1º estado*@
+@if( State == States.IntroducirNombre ) {
+    <h2>PLAYER NAME</h2>
+    <input placeholder="Enter Player Name" type="text" @bind-value="Name" />
+    <button @onclick="() => State = States.Config">OK</button>
+}
+
+@* introducir configuracion partida 2º estado*@
+@if( State == States.Config ) {
+    <h2> Now its time to create the room !</h2>
+    <label for="rows"> Nº Rows</label>
+    <input type="number" id="rows" @bind="rows" />
+    <button @onclick="@GoToRoom"> Create Room  </button>
+
+    <br />
+    <h2> Or join one already created </h2>
+    <input type="text" id="joinRoomId" @bind="joinRoomId" placeholder=" Enter room code" />
+    <button @onclick="JoinRoom"> Join Room  </button>
+}
+
+
+
+
+@code{
+    //state0 params: Introducir nombre
+    public enum States { IntroducirNombre, Config }
+    public States State { get; set; } = States.IntroducirNombre;
+
+
+    public string Name;
+    //state1 params: Config room
+    public int rows = 10;
+
+    public string joinRoomId;
+
+    public void GoToRoom() {
+        String RoomId = RoomCoderGenerator(5);
+        UriHelp.NavigateTo($"Room/{RoomId}");
+    }
+
+    public string RoomCoderGenerator( int length ) {
+        Random random = new Random();
+        string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        return new string(Enumerable.Repeat(chars,length)
+          .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    public void JoinRoom() {
+        UriHelp.NavigateTo($"../Room/{joinRoomId}");
+    }
+
+
+}
