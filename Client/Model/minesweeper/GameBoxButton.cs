@@ -12,7 +12,7 @@ namespace BlazorApp.Client.Model.minesweeper {
         private int width;
         public int x { get; }
         public int y { get; }
-        private ButtonCurrentState state ;
+        private ButtonCurrentState state { get;  set; }
         public Boolean isBomb { get; }
 
         public GameBoxButton( int? width,int x, int y, Boolean isBomb) {
@@ -26,7 +26,7 @@ namespace BlazorApp.Client.Model.minesweeper {
             this.state = ButtonCurrentState.Flag;
         }
         public bool RevealT_ExplodedF() {
-            this.state=isBomb? ButtonCurrentState.Exploded: ButtonCurrentState.Open;
+            this.state = this.isBomb ? ButtonCurrentState.Exploded : ButtonCurrentState.Open;
             return isBomb;
         }
 

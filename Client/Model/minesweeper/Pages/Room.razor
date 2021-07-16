@@ -4,45 +4,121 @@
 
 <h3>This is the room manager id: @roomId, still working on it:</h3>
 
-<BSContainer>
-
-    <h3>Board</h3>
+<div class="card" >
     <BSContainer>
 
-        @for( int x = 0; x < rows; x++ ) {
-            int xa = x;
-        <BSRow>
-            
-            @for( int y = 0; y < rows; y++ ) {
+        <h3>Board</h3>
+
+        @foreach( var row in Squares2 ) {
+            <BSRow>
+                @foreach( Mine mine in row ) {
 
 
 
-                int ya = y;
+                    <button disabled="@mine.pulsado" @oncontextmenu="(e) => { //right de momento
+                                         mine.Flag();
+                                     }"
+                                 @onclick="(e) => { //left
+                                         if( e.Button == 0 ) mine.MakeMove();
 
 
-                <BSCol><BSButton @onclick="()=>move(xa,ya)"  Color="Color.Light">@xa @ya</BSButton> </BSCol>
+                                     }">
+                        <BSBadge Color="@mine.ClassName"> @mine.text  </BSBadge>
+                            </button>
+                        }
 
-            }
-        </BSRow>
+            </BSRow>
         }
     </BSContainer>
-
-
-
-</BSContainer>
-
+</div>
 @code {
+
+        List<List<Mine>> Squares2 { get; set; }
+
+    public Mine aux;
+
     [Parameter] public string roomId { set; get; }
     int rows = 5;
     int cx, cy;
     //BSButton boton;
 
-    MinesweeperLogic game = new MinesweeperLogic(5);
-    private void move(int x,int y) {
-        bool b= game.MakeMove(x,y);
-        //boton.Color = Color.Danger;
 
 
+    string classs = "Initial";
+    Color color;
+
+
+    protected override async Task OnInitializedAsync() {
+        await Task.FromResult(this.Squares2 = createMineList());
+    }
+
+
+    public List<List<Mine>> createMineList( int size = 5 ) {
+
+
+        //referencia
+        var result = new List<List<Mine>>();
+        for( var rowIdx = 0; rowIdx < size; rowIdx++ ) {
+            var row = new List<Mine>();
+            for( var colIdx = 0; colIdx < size; colIdx++ ) {
+                row.Add(new Mine(colIdx,rowIdx));
+            }
+            result.Add(row);
+        }
+        return result;
+
+        //List<List<Mine>> l = new List<List<Mine>>();
+        //List<Mine> aux = new List<Mine>();
+        //for( int x = 0; x < rows; x++ ) {
+        //    int xa = x;
+        //    aux.Clear();
+        //    for( int y = 0; y < rows; y++ ) {
+        //        int ya = y;
+        //        aux.Add(new Mine(xa,ya));
+        //    l.Add(aux);
+        //}
+        //    return l;
+
+    }
+
+
+
+    public class Mine {
+
+        public MinesweeperLogic game { set; get; }
+        public Boolean pulsado { get; set; }
+        public String text;
+        private bool alive = true;
+        public int X { get; set; }
+        public int Y { get; set; }
+        public Color ClassName { get; set; }
+        public Mine( int x,int y,int rows = 5 ) {
+            this.X = x;
+            this.Y = y;
+            //await Task.FromResult(
+            this.game = new MinesweeperLogic(rows);
+            ClassName = Color.Secondary;
+            this.pulsado = false;
+        }
+        public void MakeMove() {
+            //Console.WriteLine(exploded ? "exploded" : "not exploded");
+            //Console.WriteLine($"X: {x}, Y: {y}");
+            //Console.WriteLine($"XPos: {XPos}, YPos: {YPos}");
+
+            alive = game.MakeMove(X,Y);
+            ClassName = alive ? Color.Success : Color.Danger;
+            pulsado = true;
+
+        }
+        public void Flag() {
+            game.Flag(X,Y);
+            ClassName = Color.Info;
+        }
+
+        public void lost() {
+
+            game.
+        }
     }
 
 }
