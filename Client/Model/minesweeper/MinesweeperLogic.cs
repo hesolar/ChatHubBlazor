@@ -73,17 +73,16 @@ namespace BlazorApp.Client.Model.minesweeper {
         }
 
         public int BombsNeighbors( int cx,int cy ) {
-            return LittleBoxesOnTheHilltop.Where(panel => panel.x == (cx - 1) && panel.x <= (cx + 1)
-                                                && panel.y >= (cy - 1) && panel.y <= (cy + 1)).Where(z => z.isBomb).ToList().Count;
+           return LittleBoxesOnTheHilltop.Where(t => (t.x + 1) == cx || (t.x - 1) == cx || t.x == cx).Intersect(
+            LittleBoxesOnTheHilltop.Where(t => (t.y + 1) == cy || (t.y - 1) == cy || t.y == cy)).ToList().Except(this.LittleBoxesOnTheHilltop.Where(z => z.x == cx && z.y == cy).ToList()).Count();
+            //return LittleBoxesOnTheHilltop.Where(x=>x.isBomb)
+            //    .Where(panel => panel.x == (cx - 1) || panel.x <= (cx + 1)
+            //                                    || panel.y >= (cy - 1) || panel.y <= (cy + 1)).Where(z => z.isBomb).ToList().Except(this.LittleBoxesOnTheHilltop.Where(z => z.x == cx && z.y == cy).ToList()).Count();
         }
-        override
-        public string ToString() {
+       
 
-            LittleBoxesOnTheHilltop.ForEach(x => Console.WriteLine(x.x + "-" + x.y + "-bomb:"+x.isBomb));
-            
-
-            
-            return "";
+        public bool IsBomb(int x,int y) {
+            return this.LittleBoxesOnTheHilltop.Where(z => z.x.Equals(x) && z.y.Equals(y)).First().isBomb;
         }
 
 

@@ -4,7 +4,7 @@
 
 <h3>This is the room manager id: @roomId, still working on it:</h3>
 
-<div class="card" >
+<div class="card"  >
     <BSContainer>
 
         <h3>Board</h3>
@@ -19,10 +19,10 @@
                                          mine.Flag();
                                      }"
                                  @onclick="(e) => { //left
-                                         if( e.Button == 0 ) mine.MakeMove();
-
-
-                                     }">
+                                               if( e.Button == 0 ) {
+                                                   if( !mine.MakeMove() ) Lost();
+                                               }
+                                           }">
                         <BSBadge Color="@mine.ClassName"> @mine.text  </BSBadge>
                             </button>
                         }
@@ -31,11 +31,11 @@
         }
     </BSContainer>
 </div>
+
 @code {
 
-        List<List<Mine>> Squares2 { get; set; }
+    List<List<Mine>> Squares2 { get; set; }
 
-    public Mine aux;
 
     [Parameter] public string roomId { set; get; }
     int rows = 5;
@@ -81,9 +81,19 @@
 
     }
 
+    public bool Lost() {
+        Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
 
+        Squares2.ForEach(x => x.Where(y => y.bomb).ToList().ForEach(d=>d.ClassName=Color.Danger     ));
+        //this.Squares2.ForEach(x => x.ForEach(y =>y. y.ClassName = Color.Danger));
+
+
+
+        return false;
+    }
 
     public class Mine {
+
 
         public MinesweeperLogic game { set; get; }
         public Boolean pulsado { get; set; }
@@ -92,6 +102,8 @@
         public int X { get; set; }
         public int Y { get; set; }
         public Color ClassName { get; set; }
+        public bool bomb { get; set; }
+
         public Mine( int x,int y,int rows = 5 ) {
             this.X = x;
             this.Y = y;
@@ -99,8 +111,9 @@
             this.game = new MinesweeperLogic(rows);
             ClassName = Color.Secondary;
             this.pulsado = false;
+            this.bomb = game.IsBomb(x,y);
         }
-        public void MakeMove() {
+        public bool MakeMove() {
             //Console.WriteLine(exploded ? "exploded" : "not exploded");
             //Console.WriteLine($"X: {x}, Y: {y}");
             //Console.WriteLine($"XPos: {XPos}, YPos: {YPos}");
@@ -108,6 +121,8 @@
             alive = game.MakeMove(X,Y);
             ClassName = alive ? Color.Success : Color.Danger;
             pulsado = true;
+            this.text = game.BombsNeighbors(X,Y)+"";
+            return alive;
 
         }
         public void Flag() {
@@ -115,10 +130,7 @@
             ClassName = Color.Info;
         }
 
-        public void lost() {
 
-            game.
-        }
     }
 
 }
