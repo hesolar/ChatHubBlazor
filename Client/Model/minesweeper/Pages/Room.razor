@@ -84,7 +84,7 @@
     public bool Lost() {
         Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
 
-        Squares2.ForEach(x => x.Where(y => y.bomb &&  y.text.Equals("")).ToList().ForEach(d=>d.ClassName=Color.Danger     ));
+        Squares2.ForEach(x => x.Where(y => y.bomb && string.IsNullOrEmpty(y.text)).ToList().ForEach(d=>d.ClassName=Color.Danger     ));
         //this.Squares2.ForEach(x => x.ForEach(y =>y. y.ClassName = Color.Danger));
 
 
