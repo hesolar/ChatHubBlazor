@@ -84,7 +84,7 @@
     public bool Lost() {
         Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
 
-        Squares2.ForEach(x => x.Where(y => y.bomb).ToList().ForEach(d=>d.ClassName=Color.Danger     ));
+        Squares2.ForEach(x => x.Where(y => y.bomb &&  y.text.Equals("")).ToList().ForEach(d=>d.ClassName=Color.Danger     ));
         //this.Squares2.ForEach(x => x.ForEach(y =>y. y.ClassName = Color.Danger));
 
 
@@ -121,7 +121,7 @@
             alive = game.MakeMove(X,Y);
             ClassName = alive ? Color.Success : Color.Danger;
             pulsado = true;
-            this.text = game.BombsNeighbors(X,Y)+"";
+            if(alive) this.text = game.BombsNeighbors(X,Y)+"";
             return alive;
 
         }
