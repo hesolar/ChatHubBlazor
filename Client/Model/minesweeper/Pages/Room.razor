@@ -77,14 +77,14 @@
     }
 
 
-    public List<List<Mine>> createMineList( int size = 5 ) {
+    public List<List<Mine>> createMineList(  ) {
 
 
         //referencia
         var result = new List<List<Mine>>();
-        for( var x = 0; x < size; x++ ) {
+        for( var x = 0; x < rows; x++ ) {
             var row = new List<Mine>();
-            for( var y = 0; y < size; y++ ) {
+            for( var y = 0; y < rows; y++ ) {
                 row.Add(new Mine(x,y,game.IsBomb(x,y)));
             }
             result.Add(row);
