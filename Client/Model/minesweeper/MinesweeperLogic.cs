@@ -7,8 +7,9 @@ namespace BlazorApp.Client.Model.minesweeper {
     public class MinesweeperLogic {
         int rows;
         List<GameBoxButton> LittleBoxesOnTheHilltop;
-        int mines, minesRemaining;
-        int flagsRemaining;
+        public int bombs;
+        public int bombsRemaining { get; set; }
+        public int flagsRemaining { get; set; }
         public bool Alive { get; set; } = true;
         const double margin = 60.0 / 100.0;
 
@@ -18,23 +19,27 @@ namespace BlazorApp.Client.Model.minesweeper {
             Random s_Generator = new Random();
             this.LittleBoxesOnTheHilltop = new List<GameBoxButton>();
             this.rows = rows;
-            mines = 0;
+            bombs = 0;
             
-            
+                                string[] trueOrFalse = { "false","false","false", "true" };
+
             for( int row = 0; row < rows; row++ ) {
                 for( int col = 0; col < rows; col++ ) {
                     //cambiar ancho?
-                    LittleBoxesOnTheHilltop.Add(new GameBoxButton(16,row,col,s_Generator.NextDouble() <= margin));
-                    mines += 1;
+                   int i= s_Generator.Next(0,1);
+                    bool b = bool.Parse(trueOrFalse[s_Generator.Next(0,4)]);
+                    if( b == true )  bombs += 1; 
+                    LittleBoxesOnTheHilltop.Add(new GameBoxButton(16,row,col,b));;
+                   
                 }
             }
-            flagsRemaining = mines;
-            mines = 0;
+            bombsRemaining = bombs;
+            flagsRemaining = bombs;
 
 
         }
         public bool Victory() {
-            return this.minesRemaining == 0;
+            return this.bombsRemaining == 0;
         }
 
         public bool MakeMove( int cx,int cy ) {
@@ -59,25 +64,37 @@ namespace BlazorApp.Client.Model.minesweeper {
         //true if can flag a box, false no flags left
         public bool Flag( int cx,int cy ) {
 
-            if( flagsRemaining == 0 ) return false;
+            
 
-            flagsRemaining--;
+            
+           
             GameBoxButton gb = this.LittleBoxesOnTheHilltop.Where(x => x.x.Equals(cx) && x.y.Equals(cy)).Single();
-            gb.Flag();
-            if( gb.isBomb ) minesRemaining--;
+
+            bool b = gb.Flag();
+
+            //¿not flaged?
+            if( b ) {
+                if( gb.isBomb ) bombsRemaining--;
+                flagsRemaining--;
+                return true;
+            }
+            //¿flaged? then unflag
+            else {
+                flagsRemaining++;
+                if( gb.isBomb ) bombsRemaining++;
+                return false;
+
+            }                    
 
 
-
-
-            return true;
+           
         }
 
         public int BombsNeighbors( int cx,int cy ) {
-           return LittleBoxesOnTheHilltop.Where(t => (t.x + 1) == cx || (t.x - 1) == cx || t.x == cx).Intersect(
-            LittleBoxesOnTheHilltop.Where(t => (t.y + 1) == cy || (t.y - 1) == cy || t.y == cy)).ToList().Except(this.LittleBoxesOnTheHilltop.Where(z => z.x == cx && z.y == cy).ToList()).Count();
-            //return LittleBoxesOnTheHilltop.Where(x=>x.isBomb)
-            //    .Where(panel => panel.x == (cx - 1) || panel.x <= (cx + 1)
-            //                                    || panel.y >= (cy - 1) || panel.y <= (cy + 1)).Where(z => z.isBomb).ToList().Except(this.LittleBoxesOnTheHilltop.Where(z => z.x == cx && z.y == cy).ToList()).Count();
+            var x = LittleBoxesOnTheHilltop.Where(t => t.isBomb && (t.x + 1 == cx || t.x - 1 == cx || t.x == cx)).Intersect(LittleBoxesOnTheHilltop.Where(t => t.isBomb && (t.y + 1 == cy || t.y - 1 == cy || t.y == cy))).ToList();
+            x.Remove(LittleBoxesOnTheHilltop.Where(z => z.x == cx && z.y == cy).First());
+            
+            return x.Count();
         }
        
 
@@ -85,6 +102,8 @@ namespace BlazorApp.Client.Model.minesweeper {
             return this.LittleBoxesOnTheHilltop.Where(z => z.x.Equals(x) && z.y.Equals(y)).First().isBomb;
         }
 
-
+        public bool IsButtonFlagged(int x, int y ) {
+            return this.LittleBoxesOnTheHilltop.Where(z => z.x == x && z.y == y).First().isFlagged();
+        }
     }
 }

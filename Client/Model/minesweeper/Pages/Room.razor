@@ -4,7 +4,7 @@
 
 <h3>This is the room manager id: @roomId, still working on it:</h3>
 
-<div class="card"  >
+<div class="card">
     <BSContainer>
 
         <h3>Board</h3>
@@ -15,37 +15,61 @@
 
 
 
-                    <button disabled="@mine.pulsado" @oncontextmenu="(e) => { //right de momento
-                                         mine.Flag();
-                                     }"
-                                 @onclick="(e) => { //left
-                                               if( e.Button == 0 ) {
-                                                   if( !mine.MakeMove() ) Lost();
-                                               }
-                                           }">
-                        <BSBadge Color="@mine.ClassName"> @mine.text  </BSBadge>
-                            </button>
-                        }
+                    <button disabled="@mine.pulsado"
+                            @oncontextmenu="(e) => { //right de momento
+                                                     if( !mine.pulsado ) {
+                                                     Console.WriteLine(e.Button);
+                                                     bool b=  game.Flag(mine.X,mine.Y);
+                                                     mine.Flag(b);}
+                                                 }"
+                            @onclick="(e) => { //left
+                                          if( e.Button == 0 ) {
+
+                                              if( ! game.IsButtonFlagged(mine.X,mine.Y) ) {
+                                                  bool alive = game.MakeMove(mine.X,mine.Y);
+
+                                                  if( !alive ) Lost();
+                                                  else {
+                                                      mine.MakeMove(game.BombsNeighbors(mine.X,mine.Y).ToString());
+
+                                                  }
+
+
+
+                                              }
+                                          }
+
+                                      }">
+                        <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
+                    </button>
+                }
 
             </BSRow>
         }
     </BSContainer>
+    bombs Remaining:   @game.bombsRemaining <br />
+    bombs : @game.bombs <br />
+    flags: @game.flagsRemaining
+
+
+    @if( game.Victory() ) {
+        this.Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
+        <label> YOU WIN </label>
+
+    }
+
 </div>
 
 @code {
-
+    [Parameter] public string roomId { set; get; }
     List<List<Mine>> Squares2 { get; set; }
 
 
-    [Parameter] public string roomId { set; get; }
+
     int rows = 5;
-    int cx, cy;
-    //BSButton boton;
+    public MinesweeperLogic game = new MinesweeperLogic(5);
 
 
-
-    string classs = "Initial";
-    Color color;
 
 
     protected override async Task OnInitializedAsync() {
@@ -58,10 +82,10 @@
 
         //referencia
         var result = new List<List<Mine>>();
-        for( var rowIdx = 0; rowIdx < size; rowIdx++ ) {
+        for( var x = 0; x < size; x++ ) {
             var row = new List<Mine>();
-            for( var colIdx = 0; colIdx < size; colIdx++ ) {
-                row.Add(new Mine(colIdx,rowIdx));
+            for( var y = 0; y < size; y++ ) {
+                row.Add(new Mine(x,y,game.IsBomb(x,y)));
             }
             result.Add(row);
         }
@@ -81,54 +105,58 @@
 
     }
 
-    public bool Lost() {
-        Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
-
-        Squares2.ForEach(x => x.Where(y => y.bomb && string.IsNullOrEmpty(y.text)).ToList().ForEach(d=>d.ClassName=Color.Danger     ));
-        //this.Squares2.ForEach(x => x.ForEach(y =>y. y.ClassName = Color.Danger));
+    public void Lost() {
 
 
+        Squares2.ForEach(x => x.Where(y => y.bomb && string.IsNullOrEmpty(y.text) ).ToList().ForEach(d=>d.ColorEstado=Color.Danger     ));;
+        //Squares2.ForEach(x => x.Where(y => !y.bomb ).ToList().ForEach(d => d.ClassName = Color.Info));
 
-        return false;
+
+        this.Squares2.ForEach(x => x.ForEach(y =>y.pulsado=true));
+
+
+
+    }
+    public void Win() {
+        this.Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
+
     }
 
     public class Mine {
 
 
-        public MinesweeperLogic game { set; get; }
+
         public Boolean pulsado { get; set; }
         public String text;
-        private bool alive = true;
         public int X { get; set; }
         public int Y { get; set; }
-        public Color ClassName { get; set; }
-        public bool bomb { get; set; }
+        public Color ColorEstado { get; set; }
+        public bool bomb;
 
-        public Mine( int x,int y,int rows = 5 ) {
+        public Mine( int x,int y,bool bomb) {
             this.X = x;
             this.Y = y;
             //await Task.FromResult(
-            this.game = new MinesweeperLogic(rows);
-            ClassName = Color.Secondary;
+
+            ColorEstado = Color.Secondary;
             this.pulsado = false;
-            this.bomb = game.IsBomb(x,y);
+            this.bomb = bomb;
         }
-        public bool MakeMove() {
-            //Console.WriteLine(exploded ? "exploded" : "not exploded");
-            //Console.WriteLine($"X: {x}, Y: {y}");
-            //Console.WriteLine($"XPos: {XPos}, YPos: {YPos}");
+        public void MakeMove(String bombsNeighbor) {
 
-            alive = game.MakeMove(X,Y);
-            ClassName = alive ? Color.Success : Color.Danger;
+            ColorEstado = Color.Success;
             pulsado = true;
-            if(alive) this.text = game.BombsNeighbors(X,Y)+"";
-            return alive;
+            this.text = bombsNeighbor;
 
         }
-        public void Flag() {
-            game.Flag(X,Y);
-            ClassName = Color.Info;
+        public void Flag(bool b) {
+            //game.Flag(X,Y);
+
+            ColorEstado =b? Color.Primary: Color.Secondary;
+
+
         }
+
 
 
     }
