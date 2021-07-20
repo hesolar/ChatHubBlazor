@@ -9,42 +9,42 @@ namespace BlazorApp.Client.Model.minesweeper {
         Exploded
     }
     public class GameBoxButton {
-        private int width;
-        public int x { get; }
-        public int y { get; }
-        private ButtonCurrentState state { get; set; }
-        public bool isBomb { get; }
-       
+        public int X { get; }
+        public int Y { get; }
+        private ButtonCurrentState State { get; set; }
+        public bool IsBomb { get; }
+        public int bombsNeighbor { get; set;
+        }
 
-        public GameBoxButton( int? width,int x, int y, Boolean isBomb) {
-            this.x = x;
-            this.y = y;
-            this.isBomb = isBomb;
-            this.state = ButtonCurrentState.Initial;
-            if(width == null) this.width=16; //parece q mas o menos esto estara bn d ancho
+        public GameBoxButton( int x, int y, Boolean isBomb) {
+            this.X = x;
+            this.Y = y;
+            this.IsBomb = isBomb;
+            this.State = ButtonCurrentState.Initial;
+            
         }
         public bool Flag() {
 
-            if( this.state == ButtonCurrentState.Flag ) {
-                this.state = ButtonCurrentState.Initial;
-                return false;
+            if( this.State == ButtonCurrentState.Flag ) {
+                this.State = ButtonCurrentState.Initial;
+                return false; 
             }
             else {
-                this.state = ButtonCurrentState.Flag;
+                this.State = ButtonCurrentState.Flag;
                 return true;
             }
             
         }
         public bool RevealT_ExplodedF() {
-            this.state = this.isBomb ? ButtonCurrentState.Exploded : ButtonCurrentState.Open;
-            return !isBomb;
+            this.State = this.IsBomb ? ButtonCurrentState.Exploded : ButtonCurrentState.Open;
+            return !IsBomb;
         }
 
-       public bool isRevealed() {
-            return this.state == ButtonCurrentState.Open; 
+       public bool IsRevealed() {
+            return this.State == ButtonCurrentState.Open; 
         }
-        public bool isFlagged() {
-            return this.state == ButtonCurrentState.Flag;
+        public bool IsFlagged() {
+            return this.State == ButtonCurrentState.Flag;
         }
 
     }

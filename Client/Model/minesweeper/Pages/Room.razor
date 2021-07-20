@@ -16,24 +16,47 @@
 
 
                     <button disabled="@mine.pulsado"
-                            @oncontextmenu="(e) => { //right de momento
+                            @oncontextmenu="(e) => { //right click
                                                      if( !mine.pulsado ) {
-                                                     Console.WriteLine(e.Button);
                                                      bool b=  game.Flag(mine.X,mine.Y);
-                                                     mine.Flag(b);}
+                                                     mine.Flag();}
                                                  }"
-                            @onclick="(e) => { //left
+                            @onclick="( e ) => { //left click
                                           if( e.Button == 0 ) {
 
-                                              if( ! game.IsButtonFlagged(mine.X,mine.Y) ) {
+                                              if( !game.IsButtonFlagged(mine.X,mine.Y) ) {
                                                   bool alive = game.MakeMove(mine.X,mine.Y);
 
-                                                  if( !alive ) Lost();
-                                                  else {
-                                                      mine.MakeMove(game.BombsNeighbors(mine.X,mine.Y).ToString());
+                                                  int bombs = game.neighborBombs(mine.X,mine.Y);
 
+
+                                                  if( alive ) {
+                                                      int bombsNeighb = game.neighborBombs(mine.X,mine.Y);
+                                                      mine.MakeMove(bombsNeighb.ToString());
+
+                                                      if( game.neighborBombs(mine.X,mine.Y).Equals(0)){
+                                                          neighbors(mine);
+                                                      }
+
+                                                      
+
+
+
+                                                         
+
+                                                          
+                                                          
+
+
+
+
+
+
+
+
+                                                      
                                                   }
-
+                                                  else Lost();
 
 
                                               }
@@ -47,15 +70,16 @@
             </BSRow>
         }
     </BSContainer>
-    @*bombs Remaining:   @game.bombsRemaining <br />
+     
+    @*Indicadores
+    bombs Remaining:   @game.bombsRemaining <br />
     bombs : @game.bombs <br />*@
-    flags: @game.flagsRemaining
+    flags: @game.FlagsRemaining
 
 
     @if( game.Victory() ) {
         this.Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
         <label> YOU WIN </label>
-
     }
 
 </div>
@@ -76,6 +100,25 @@
         await Task.FromResult(this.Squares2 = createMineList());
     }
 
+    public void neighbors(Mine mine) {
+        List<Mine> minesNeighbors= Squares2.SelectMany(z => z.Where(t => t.X + 1 == mine.X || t.X - 1 == mine.X || t.X == mine.X)).Intersect(
+                                                             Squares2.SelectMany(z => z.Where(t => t.Y + 1 == mine.Y || t.Y - 1 == mine.Y || t.Y == mine.Y))).ToList();
+
+        minesNeighbors.Remove(minesNeighbors.Where(x=>x.X==mine.X && x.Y==mine.Y).First());
+        minesNeighbors.Where(x=>!x.flag).ToList().ForEach(z => z.MakeMove(game.neighborBombs(z.X,z.Y).ToString()));
+
+
+
+
+        var zeroMines =minesNeighbors.Where(x =>!x.flag && !x.pulsado && game.neighborBombs(x.X,x.Y).ToString().Equals(0.ToString())).ToList();
+
+        zeroMines.ForEach(x => x.MakeMove(game.neighborBombs(x.X,x.Y).ToString()));
+        zeroMines.Where(x => x.pulsado).ToList().ForEach(x => neighbors(x));
+
+
+
+
+    }
 
     public List<List<Mine>> createMineList(  ) {
 
@@ -108,7 +151,7 @@
     public void Lost() {
 
 
-        Squares2.ForEach(x => x.Where(y => y.bomb && string.IsNullOrEmpty(y.text) ).ToList().ForEach(d=>d.ColorEstado=Color.Danger     ));;
+        Squares2.ForEach(x => x.Where(y => y.bomb && y.text.Equals("-") ).ToList().ForEach(d=>d.ColorEstado=Color.Danger     ));;
         //Squares2.ForEach(x => x.Where(y => !y.bomb ).ToList().ForEach(d => d.ClassName = Color.Info));
 
 
@@ -132,8 +175,9 @@
         public int Y { get; set; }
         public Color ColorEstado { get; set; }
         public bool bomb;
+        public bool flag = false;
 
-        public Mine( int x,int y,bool bomb) {
+        public Mine( int x,int y,bool bomb ) {
             this.X = x;
             this.Y = y;
             //await Task.FromResult(
@@ -141,22 +185,23 @@
             ColorEstado = Color.Secondary;
             this.pulsado = false;
             this.bomb = bomb;
+            this.text = "-";
         }
-        public void MakeMove(String bombsNeighbor) {
+        public void MakeMove( String bombsNeighbor ) {
 
             ColorEstado = Color.Success;
             pulsado = true;
             this.text = bombsNeighbor;
 
+
         }
-        public void Flag(bool b) {
+        public void Flag( ) {
             //game.Flag(X,Y);
-
-            ColorEstado =b? Color.Primary: Color.Secondary;
+            flag = !flag;
+            ColorEstado = this.flag ? Color.Primary : Color.Secondary;
 
 
         }
-
 
 
     }
