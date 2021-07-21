@@ -39,6 +39,7 @@ namespace BlazorApp.Client.Model.minesweeper {
         }
         public bool Victory() {
             return this.BombsRemaining.Equals(0);
+            return this.BombsRemaining.Equals(0);
         }
 
         public bool MakeMove( int cx,int cy ) {

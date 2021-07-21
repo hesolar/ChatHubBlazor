@@ -13,49 +13,53 @@
         <h3>Board</h3>
 
         @foreach( var row in Squares2 ) {
-            <BSRow>
-                @foreach( Mine mine in row ) {
+    <BSRow>
+        @foreach( Mine mine in row ) {
+
+        <button disabled="@mine.isZero" style="width:30px" 
+                    @oncontextmenu=" (e)=>
+            { //right click
+            if( !mine.pulsado ) {
+            bool b=  game.Flag(mine.X,mine.Y);
+            mine.Flag();}
+            }"
+            @onclick="( e ) => { //left click
+            Console.WriteLine(e.Button);
+
+            if( e.Button == 0 ) {
+            if( !mine.pulsado ) {
+            if( !game.IsButtonFlagged(mine.X,mine.Y) ) {
+            bool alive = game.MakeMove(mine.X,mine.Y);
+
+            int bombs = game.neighborBombs(mine.X,mine.Y);
 
 
+            if( alive ) {
+            int bombsNeighb = game.neighborBombs(mine.X,mine.Y);
+            mine.MakeMove(bombsNeighb);
 
-                    <button disabled="@mine.pulsado"
-                            @oncontextmenu="(e) => { //right click
-                                                     if( !mine.pulsado ) {
-                                                     bool b=  game.Flag(mine.X,mine.Y);
-                                                     mine.Flag();}
-                                                 }"
-                            @onclick="( e ) => { //left click
+            if( game.neighborBombs(mine.X,mine.Y).Equals(0) ) {
+            RevealZeroSquaresRecursion(mine);
+            }
+            }
+            else Lost();
+            }
+            }
+            else {
+            MouseWheel(mine);
+            }
+            }
 
-                                          if( e.Button == 0 ) {
+            }"
+            @onmousewheel="() => {
+            if(mine.pulsado)MouseWheel(mine);
 
-                                              if( !game.IsButtonFlagged(mine.X,mine.Y) ) {
-                                                  bool alive = game.MakeMove(mine.X,mine.Y);
+            }">
+            <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
+        </button>
+        }
 
-                                                  int bombs = game.neighborBombs(mine.X,mine.Y);
-
-
-                                                  if( alive ) {
-                                                      int bombsNeighb = game.neighborBombs(mine.X,mine.Y);
-                                                      mine.MakeMove(bombsNeighb);
-
-                                                      if( game.neighborBombs(mine.X,mine.Y).Equals(0) ) {
-                                                          RevealZeroSquaresRecursion(mine);
-                                                      }
-                                                  }else Lost();
-                                              }
-
-                                          }
-
-                                      }"
-                            @onmousewheel="() => {
-                                               if(mine.pulsado)MouseWheel(mine);
-
-                                           }">
-                        <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
-                    </button>
-                }
-
-            </BSRow>
+    </BSRow>
         }
     </BSContainer>
 
@@ -73,12 +77,12 @@
 </div>
 
 @code {
-        [Parameter] public string roomId { set; get; }
-        List<List<Mine>> Squares2 { get; set; }
+    [Parameter] public string roomId { set; get; }
+    List<List<Mine>> Squares2 { get; set; }
 
 
 
-        int rows = 20;
+    int rows = 20;
     public MinesweeperLogic game = new MinesweeperLogic(20);
 
 
@@ -88,7 +92,7 @@
         await Task.FromResult(this.Squares2 = createMineList());
     }
 
-    public void MouseWheel(Mine mine) {
+    public void MouseWheel( Mine mine ) {
         Func<Mine,List<Mine>> CasillasAdyacentes = (m => {
             List<Mine> vecinos = Squares2.SelectMany(z => z.Where(t => t.X + 1 == m.X || t.X - 1 == m.X || t.X == m.X)).Intersect(
           Squares2.SelectMany(z => z.Where(t => t.Y + 1 == m.Y || t.Y - 1 == m.Y || t.Y == m.Y))).ToList();
@@ -96,13 +100,26 @@
             return vecinos;
         });
 
-        List<Mine> m = CasillasAdyacentes(mine).Where(x=>x.flag).ToList();
+        List<Mine> flag = CasillasAdyacentes(mine).Where(x => x.flag).ToList();
+        List<Mine> notFlagAndNotOpen = CasillasAdyacentes(mine).Where(x => !x.pulsado && !x.flag).ToList();
         int bombsNeighbor = game.neighborBombs(mine.X,mine.Y);
-        if( m.Count.Equals(bombsNeighbor) ) {
-            mine.MakeMove(bombsNeighbor);
-            game.MakeMove(mine.X,mine.Y);
+        if( flag.Count.Equals(bombsNeighbor) ) {
+            notFlagAndNotOpen.ForEach(x => {
+
+
+                bombsNeighbor = game.neighborBombs(x.X,x.Y);
+                if( bombsNeighbor == 0 ) {
+                    x.MakeMove(0);
+                    RevealZeroSquaresRecursion(x);
+                }
+                else {
+                    if( game.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
+                    else Lost();
+                }
+            });
+
         }
-        Console.WriteLine("hello world");
+        Console.WriteLine("helloWorld");
     }
 
     public void RevealZeroSquaresRecursion( Mine mine ) {
@@ -172,7 +189,7 @@
     public void Lost() {
 
 
-        Squares2.AsParallel().ToList().ForEach(x => x.Where(y => y.bomb && y.text.Equals("-")).ToList().ForEach(d => d.ColorEstado = Color.Danger)); ;
+        Squares2.AsParallel().ToList().ForEach(x => x.Where(y => y.bomb && y.text.Equals("")).ToList().ForEach(d => d.ColorEstado = Color.Danger)); ;
         //Squares2.ForEach(x => x.Where(y => !y.bomb ).ToList().ForEach(d => d.ClassName = Color.Info));
 
 
@@ -194,7 +211,7 @@
     public class Mine {
 
 
-
+        public bool isZero;
         public Boolean pulsado { get; set; }
         public String text;
         public int X { get; set; }
@@ -208,23 +225,24 @@
             this.Y = y;
             //await Task.FromResult(
 
-            ColorEstado = Color.Secondary;
+            ColorEstado = Color.None;
             this.pulsado = false;
             this.bomb = bomb;
-            this.text = "-";
+            this.text = "";
+            this.isZero = false;
         }
         public void MakeMove( int bombsNeighbor ) {
 
             ColorEstado = Color.Success;
             pulsado = true;
             this.text = bombsNeighbor.ToString();
-
+            if( bombsNeighbor.Equals(0) ) this.isZero = true;
 
         }
         public void Flag() {
             //game.Flag(X,Y);
             flag = !flag;
-            ColorEstado = this.flag ? Color.Primary : Color.Secondary;
+            ColorEstado = this.flag ? Color.Primary : Color.None;
 
 
         }
