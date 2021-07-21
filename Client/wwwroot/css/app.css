@@ -181,3 +181,13 @@ app {
         display: block;
     }
 }
+
+.squares {
+    height: 200px;
+    width: 200px;
+    color: red;
+    background-color: orange;
+}
+
+
+
