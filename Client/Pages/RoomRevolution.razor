@@ -5,7 +5,8 @@
 <h3>This is the room revolution 2.0 ultra fixed new electric mechanical manager room id: @roomId, still working on it:</h3>
 
 
-<button @onclick=medirLos10SegundosConUnTask>Do long running task</button>
+<button @onclick=medirLos10SegundosConUnTask>Begin 10 seconds countdown to lost</button>
+<button @onclick=Refresh>Comodin d desplegar</button>
 
 
 <div class="card">
@@ -26,8 +27,8 @@
                             @onclick="( e ) => { //left click
 
                                           Console.WriteLine(e.Button);
-
                                           if( e.Button == 0 ) {
+                                              
                                               if( !mine.pulsado ) {
                                                   if( !game.IsButtonFlagged(mine.X,mine.Y) ) {
                                                       bool alive = game.MakeMove(mine.X,mine.Y);
@@ -95,6 +96,7 @@
     public Rectangle ventanaDeslizante;
 
 
+
     private void Refresh() {
 
         ventanaDeslizante.DoMove();
@@ -117,6 +119,8 @@
         while( DateTime.UtcNow < endTime ) {
             await Task.Delay(100);
         }
+
+        Lost();
         System.Diagnostics.Debug.WriteLine("Finished Tourn time");
     }
 
@@ -154,10 +158,10 @@
                     else Lost();
                 }
             });
+            Refresh();
 
         }
-        mine.isZero = true;
-        Refresh();
+
 
     }
 
