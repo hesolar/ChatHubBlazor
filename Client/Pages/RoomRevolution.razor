@@ -5,6 +5,7 @@
 <h3>This is the room revolution 2.0 ultra fixed new electric mechanical manager room id: @roomId, still working on it:</h3>
 
 
+<button @onclick=medirLos10SegundosConUnTask>Do long running task</button>
 
 
 <div class="card">
@@ -15,7 +16,7 @@
         @foreach( var row in Squares2 ) {
             <BSRow>
                 @foreach( Mine mine in row ) {
-                    <button  disabled="@(mine.isZero || mine.seleccionadaCuadrado.Equals("purple"))" style="width:30px; background-color:@mine.seleccionadaCuadrado"
+                    <button disabled="@(mine.isZero || mine.seleccionadaCuadrado.Equals("purple"))" style="width:30px; background-color:@mine.seleccionadaCuadrado"
                             @oncontextmenu=" (e)=>
                             { //right click
                             if( !mine.pulsado ) {
@@ -23,9 +24,9 @@
                             mine.Flag();}
                             }"
                             @onclick="( e ) => { //left click
-                                          
+
                                           Console.WriteLine(e.Button);
-                                          
+
                                           if( e.Button == 0 ) {
                                               if( !mine.pulsado ) {
                                                   if( !game.IsButtonFlagged(mine.X,mine.Y) ) {
@@ -45,18 +46,18 @@
                                                       }
                                                       else Lost();
                                                   }
-                                                  
+
                                               }
                                               else {
                                                   MouseWheel(mine);
                                               }
                                           }
-                                          
+
                                       }"
                             @onmousewheel="() => {
-                                               
+
                                                if(mine.pulsado)MouseWheel(mine);
-                                               Refresh();
+
             }">
                         <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
                     </button>
@@ -70,7 +71,7 @@
         bombs Remaining:   @game.bombsRemaining <br />
         bombs : @game.bombs <br />*@
     flags: @game.FlagsRemaining
-  
+
 
 
     @if( game.Victory() ) {
@@ -94,9 +95,8 @@
     public Rectangle ventanaDeslizante;
 
 
-    private void Refresh()
-    {
-     
+    private void Refresh() {
+
         ventanaDeslizante.DoMove();
         int xa, xb, ya, yb;
         ventanaDeslizante.getBorders(out xa,out xb,out ya,out yb);
@@ -111,6 +111,14 @@
 
     }
 
+    async Task medirLos10SegundosConUnTask() {
+        System.Diagnostics.Debug.WriteLine("Starting Tourn");
+        DateTime endTime = DateTime.UtcNow.AddSeconds(10);
+        while( DateTime.UtcNow < endTime ) {
+            await Task.Delay(100);
+        }
+        System.Diagnostics.Debug.WriteLine("Finished Tourn time");
+    }
 
     protected override async Task OnInitializedAsync() {
         await Task.FromResult(this.Squares2 = createMineList());
@@ -148,6 +156,9 @@
             });
 
         }
+        mine.isZero = true;
+        Refresh();
+
     }
 
     public void RevealZeroSquaresRecursion( Mine mine ) {
@@ -249,7 +260,7 @@
         public bool flag = false;
 
         //ventana deslizante
-        public string seleccionadaCuadrado  {set; get;}
+        public string seleccionadaCuadrado { set; get; }
 
         public Mine( int x,int y,bool bomb ) {
             this.X = x;
