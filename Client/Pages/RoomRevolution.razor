@@ -15,14 +15,13 @@
         @foreach( var row in Squares2 ) {
             <BSRow>
                 @foreach( Mine mine in row ) {
-                    //|| @mine.seleccionadaCuadrado.Equals("orange") disabled="@mine.isZero
-                    <button  disabled="@(mine.isZero || mine.seleccionadaCuadrado.Equals("orange"))" style="width:30px; border-block-color:@mine.seleccionadaCuadrado"
+                    <button  disabled="@(mine.isZero || mine.seleccionadaCuadrado.Equals("purple"))" style="width:30px; background-color:@mine.seleccionadaCuadrado"
                             @oncontextmenu=" (e)=>
-            { //right click
-            if( !mine.pulsado ) {
-            bool b=  game.Flag(mine.X,mine.Y);
-            mine.Flag();}
-            }"
+                            { //right click
+                            if( !mine.pulsado ) {
+                            bool b=  game.Flag(mine.X,mine.Y);
+                            mine.Flag();}
+                            }"
                             @onclick="( e ) => { //left click
                                           
                                           Console.WriteLine(e.Button);
@@ -42,20 +41,22 @@
                                                           if( game.neighborBombs(mine.X,mine.Y).Equals(0) ) {
                                                               RevealZeroSquaresRecursion(mine);
                                                           }
+                                                          Refresh();
                                                       }
                                                       else Lost();
                                                   }
+                                                  
                                               }
                                               else {
                                                   MouseWheel(mine);
                                               }
                                           }
-
+                                          
                                       }"
                             @onmousewheel="() => {
                                                
                                                if(mine.pulsado)MouseWheel(mine);
-
+                                               Refresh();
             }">
                         <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
                     </button>
@@ -95,20 +96,10 @@
 
     private void Refresh()
     {
-        //?  aquamarine : aqua
-
-        this.Squares2.SelectMany(x => x.SelectMany(z => z.seleccionadaCuadrado = "aqua"));
-
-        //this.Squares2.Select(x => x.Select(z => z.seleccionadaCuadrado = "none"));
-
-        //this.Squares2.Select(x => x.Select(z => z.seleccionadaCuadrado = "blue"));
-
-
+     
         ventanaDeslizante.DoMove();
         int xa, xb, ya, yb;
         ventanaDeslizante.getBorders(out xa,out xb,out ya,out yb);
-        //Console.WriteLine(xa + "-" + ya);
-        //Console.WriteLine(xb + "-" + yb);
 
 
         List<Mine> x = Squares2.SelectMany(x => x.Where(z => z.X > xa && z.X <= xb)).ToList();
@@ -116,10 +107,6 @@
         List<Mine> xy = x.Intersect(y).ToList();
         xy.ForEach(x => x.seleccionadaCuadrado = "blue");
 
-        //List<Mine> x2 = this.Squares2.SelectMany(x => x.Where(z => z.X <= xa && z.X > xb)).ToList();
-        //List<Mine> y = this.Squares2.SelectMany(x => x.Where(z => z.Y > ya && z.Y <= yb)).ToList();
-        //List<Mine> xy2 = x.Intersect(y).ToList();
-        //xy2.ForEach(x => x.seleccionadaCuadrado = "aqua");
 
 
     }
@@ -275,7 +262,7 @@
             this.text = "";
             this.isZero = false;
 
-            this.seleccionadaCuadrado = "orange";
+            this.seleccionadaCuadrado = "purple";
         }
         public void MakeMove( int bombsNeighbor ) {
 

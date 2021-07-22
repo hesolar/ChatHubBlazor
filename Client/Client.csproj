@@ -14,11 +14,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Model\minesweeper\Pages\Room.razor" />
+    <Content Remove="Pages\Room.razor" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Model\minesweeper\Pages\style.css" />
+    <None Remove="Pages\style.css" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,8 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Model\minesweeper\Pages\Room.razor" />
-    <Resource Include="Model\minesweeper\Pages\style.css">
+    <Resource Include="Pages\Room.razor" />
+    <Resource Include="Pages\style.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
