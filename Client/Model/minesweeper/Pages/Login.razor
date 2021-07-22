@@ -47,7 +47,7 @@
 
     public void GoToRoom() {
         String RoomId = RoomCoderGenerator(5);
-        UriHelp.NavigateTo($"Room/{RoomId}");
+        UriHelp.NavigateTo($"RoomRevolution/{RoomId}");
     }
 
     public string RoomCoderGenerator( int length ) {
@@ -58,7 +58,7 @@
     }
 
     public void JoinRoom() {
-        UriHelp.NavigateTo($"../Room/{joinRoomId}");
+        UriHelp.NavigateTo($"../RoomRevolution/{joinRoomId}");
     }
 
 
