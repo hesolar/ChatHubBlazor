@@ -1,0 +1,164 @@
+﻿@page "/RoomRevolution/{roomId}"
+@using BlazorStrap
+@using Client.Model.RoomRev.minesweeperLogic
+@using Client.Model.RoomRev.minesweeperPresentation 
+
+<h3>This is the room revolution 2.0 ultra fixed new electric mechanical manager room id: @roomId, still working on it:</h3>
+
+
+<button @onclick=medirLos10SegundosConUnTask>Begin 10 seconds countdown to lost</button>
+
+
+<div class="card">
+    <BSContainer>
+
+        <h3>Board</h3>
+
+        @foreach( var row in Casillas ) {
+            <BSRow>
+                @foreach( Casilla casilla in row ) {
+                    <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals("purple"))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                            @oncontextmenu=" () => RightClick(casilla)"
+                            @onclick="( e ) =>  LeftClick(e,casilla)"
+                            @onmousewheel="(e) =>  MouseWheel(casilla)" >
+                        <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
+                    </button>
+                }
+
+            </BSRow>
+        }
+    </BSContainer>
+
+    @*Indicadores
+        bombs Remaining:   @game.bombsRemaining <br />
+        bombs : @game.bombs <br />*@
+    flags: @logicaBuscaminas.FlagsRemaining
+
+
+
+    @if( logicaBuscaminas.Victory() ) {
+        this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
+        <label> YOU WIN </label>
+    }
+
+
+
+
+</div>
+
+@code {
+    [Parameter] public string roomId { set; get; }
+
+
+
+
+    const int rows = 5;
+    //Logica buscaminas
+    public MinesweeperLogic logicaBuscaminas = new MinesweeperLogic(rows);
+    //Presentacion
+    public List<List<Casilla>> Casillas { get; set; }
+
+
+
+
+
+
+
+
+    async Task medirLos10SegundosConUnTask() {
+        System.Diagnostics.Debug.WriteLine("Starting Tourn");
+        DateTime endTime = DateTime.UtcNow.AddSeconds(10);
+        while( DateTime.UtcNow < endTime ) {
+            await Task.Delay(100);
+        }
+
+        System.Diagnostics.Debug.WriteLine("Finished Tourn time");
+    }
+
+    protected override async Task OnInitializedAsync() {
+        ActionsOnBoard.rows = rows;
+        await Task.FromResult(this.Casillas = ActionsOnBoard.crearTablero(rows,logicaBuscaminas));
+        ActionsOnBoard.ActualizarSeleccion(Casillas);
+    }
+
+
+    //Aciones mouse
+    public void LeftClick(MouseEventArgs e,Casilla mine ) {
+        //left click
+
+        if( e.Button == 0 ) {
+
+            if( !mine.pulsado ) {
+                if( !logicaBuscaminas.IsButtonFlagged(mine.X,mine.Y) ) {
+                    bool alive = logicaBuscaminas.MakeMove(mine.X,mine.Y);
+
+                    int bombs = logicaBuscaminas.neighborBombs(mine.X,mine.Y);
+
+
+                    if( alive ) {
+                        int bombsNeighb = logicaBuscaminas.neighborBombs(mine.X,mine.Y);
+                        mine.MakeMove(bombsNeighb);
+
+                        if( logicaBuscaminas.neighborBombs(mine.X,mine.Y).Equals(0) ) {
+                            ActionsOnBoard.RevealZeroSquaresRecursion(Casillas,mine,logicaBuscaminas);
+                        }
+                    }
+
+                }
+
+            }
+            else {
+                MouseWheel(mine);
+            }
+        }
+
+
+    }
+
+    public void RightClick( Casilla mine ) {
+        //right click
+        if( !mine.pulsado ) {
+            bool b = logicaBuscaminas.Flag(mine.X,mine.Y);
+            mine.Flag();
+        }
+
+    }
+
+    public void MouseWheel( Casilla mine ) {
+        if( !mine.pulsado ) return;
+
+
+        List<Casilla> flag = ActionsOnBoard.CasillasAdyacentes(Casillas,mine).Where(x => x.flag).ToList();
+        List<Casilla> notFlagAndNotOpen = ActionsOnBoard.CasillasAdyacentes(Casillas,mine).Where(x => !x.pulsado && !x.flag).ToList();
+        int bombsNeighbor = logicaBuscaminas.neighborBombs(mine.X,mine.Y);
+        if( flag.Count.Equals(bombsNeighbor) ) {
+            notFlagAndNotOpen.ForEach(x => {
+
+
+                bombsNeighbor = logicaBuscaminas.neighborBombs(x.X,x.Y);
+                if( bombsNeighbor == 0 ) {
+                    x.MakeMove(0);
+                    ActionsOnBoard.RevealZeroSquaresRecursion(Casillas,x,logicaBuscaminas);
+                }
+                else {
+                    if( logicaBuscaminas.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
+                }
+            });
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+}

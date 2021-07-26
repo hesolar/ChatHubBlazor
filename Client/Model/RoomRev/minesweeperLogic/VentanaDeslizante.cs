@@ -3,7 +3,9 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-public class Rectangle {
+namespace BlazorApp.Client.Model.RoomRev.minesweeperLogic {
+
+    public class VentanaDeslizante {
     public int xa { get; private set; }
     public int ya { get; private set; }
     public int yb { get; private set; }
@@ -23,7 +25,7 @@ public class Rectangle {
 
 
 
-    public Rectangle( int MilisecondstimeAvaliable,int rows ,int sizeRectangle,int decrementTime) {
+    public VentanaDeslizante( int MilisecondstimeAvaliable,int rows ,int sizeRectangle,int decrementTime) {
         
         this.MilisecondstimeAvaliable = MilisecondstimeAvaliable;
         this.decrementTime = decrementTime;
@@ -83,4 +85,6 @@ public class Rectangle {
         yb = this.yb;
     }
 
+   
+}
 }
