@@ -1,5 +1,7 @@
 ﻿
+using BlazorApp.Client.Model.RoomRev.minesweeperPresentation;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,12 +27,12 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperLogic {
 
 
 
-    public VentanaDeslizante( int MilisecondstimeAvaliable,int rows ,int sizeRectangle,int decrementTime) {
+    public VentanaDeslizante( int MilisecondstimeAvaliable,int sizeRectangle ,int rows,int decrementTime) {
         
         this.MilisecondstimeAvaliable = MilisecondstimeAvaliable;
         this.decrementTime = decrementTime;
         this.rows = rows;
-        this.sizeRectangle = 2;
+        this.sizeRectangle = sizeRectangle;
     }
 
 
@@ -70,13 +72,30 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperLogic {
         this.yb = ya + this.sizeRectangle;
 
      }
+    private void GenerateNewSquare2(int x, int y) {
+            int maximo = this.rows - this.sizeRectangle+1;
+            
 
-     public void DoMove() {
-        GenerateNewSquare();
-        //MilisecondstimeAvaliable=this.MilisecondstimeAvaliable - this.decrementTime;
-        //bool PlayerCanContinueMoving =await StartTimeLapse();
-        //return PlayerCanContinueMoving;
+            this.xa = x;
+            this.ya = y;
+           
+
+            this.xb = xa + this.sizeRectangle >= maximo ? xa - this.sizeRectangle : xa + this.sizeRectangle;
+            this.yb = ya + this.sizeRectangle >= maximo ? ya - this.sizeRectangle : ya + this.sizeRectangle;
+
+
     }
+
+        public void DoMove(List<Casilla> l) {
+            Random r = new Random();
+            Casilla c =  l[r.Next(0,l.Count-1)];
+            GenerateNewSquare2(c.X,c.Y); 
+
+
+            //MilisecondstimeAvaliable=this.MilisecondstimeAvaliable - this.decrementTime;
+            //bool PlayerCanContinueMoving =await StartTimeLapse();
+            //return PlayerCanContinueMoving;
+        }
 
     public void getBorders(out int xa,out int xb,out int ya , out int yb ) {
         xa = this.xa;

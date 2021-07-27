@@ -1,13 +1,19 @@
 ﻿@page "/RoomRevolution/{roomId}"
 @using BlazorStrap
 @using Client.Model.RoomRev.minesweeperLogic
-@using Client.Model.RoomRev.minesweeperPresentation 
+@using Client.Model.RoomRev.minesweeperPresentation
 
 <h3>This is the room revolution 2.0 ultra fixed new electric mechanical manager room id: @roomId, still working on it:</h3>
 
+<label for="puntuacion">Puntuacion:</label>
+<input type="text" value="@puntuacion.Item1" min="0" max="@logicaBuscaminas." step="1" disabled id="puntuacion" style="background-color:@(puntuacion.Item2? "green" : "red") " />
 
 <button @onclick=medirLos10SegundosConUnTask>Begin 10 seconds countdown to lost</button>
 
+
+<br> Progress BAR: 
+<input type="range" value="@( logicaBuscaminas.totalBombs- logicaBuscaminas.FlagsRemaining)" disabled style="color:mediumpurple" min="0"  step="1" max="@logicaBuscaminas.totalBombs"/>
+<br>
 
 <div class="card">
     <BSContainer>
@@ -20,7 +26,7 @@
                     <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals("purple"))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
                             @oncontextmenu=" () => RightClick(casilla)"
                             @onclick="( e ) =>  LeftClick(e,casilla)"
-                            @onmousewheel="(e) =>  MouseWheel(casilla)" >
+                            @onmousewheel="(e) =>  LeftClick(e,casilla)">
                         <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
                     </button>
                 }
@@ -47,22 +53,24 @@
 </div>
 
 @code {
+
+    public void aux() {
+        Presentacion.ActualizarSeleccion(Casillas);
+    }
+
     [Parameter] public string roomId { set; get; }
 
+    public Tuple<long,bool> puntuacion { get; set; } = new Tuple<long,bool>(0,true);
 
 
 
-    const int rows = 5;
+
+
+    const int rows = 10;
     //Logica buscaminas
-    public MinesweeperLogic logicaBuscaminas = new MinesweeperLogic(rows);
+    private MinesweeperLogic logicaBuscaminas = new MinesweeperLogic(rows);
     //Presentacion
-    public List<List<Casilla>> Casillas { get; set; }
-
-
-
-
-
-
+    private List<List<Casilla>> Casillas { get; set; }
 
 
     async Task medirLos10SegundosConUnTask() {
@@ -76,18 +84,15 @@
     }
 
     protected override async Task OnInitializedAsync() {
-        ActionsOnBoard.rows = rows;
-        await Task.FromResult(this.Casillas = ActionsOnBoard.crearTablero(rows,logicaBuscaminas));
-        ActionsOnBoard.ActualizarSeleccion(Casillas);
+        await Task.FromResult(this.Casillas = Presentacion.crearTablero(rows,logicaBuscaminas));
+        Presentacion.ActualizarSeleccion(Casillas);
     }
 
 
     //Aciones mouse
-    public void LeftClick(MouseEventArgs e,Casilla mine ) {
+    public void LeftClick( MouseEventArgs e,Casilla mine ) {
         //left click
-
-        if( e.Button == 0 ) {
-
+        if( e.Detail == 1 ) {
             if( !mine.pulsado ) {
                 if( !logicaBuscaminas.IsButtonFlagged(mine.X,mine.Y) ) {
                     bool alive = logicaBuscaminas.MakeMove(mine.X,mine.Y);
@@ -100,36 +105,48 @@
                         mine.MakeMove(bombsNeighb);
 
                         if( logicaBuscaminas.neighborBombs(mine.X,mine.Y).Equals(0) ) {
-                            ActionsOnBoard.RevealZeroSquaresRecursion(Casillas,mine,logicaBuscaminas);
+                            Presentacion.RevealZeroSquaresRecursion(Casillas,mine,logicaBuscaminas);
                         }
-                    }
+
+                        ActualizarPuntuacion(true);
+
+                    }else ActualizarPuntuacion(false);
 
                 }
 
+                Presentacion.ActualizarSeleccion(Casillas);
             }
-            else {
-                MouseWheel(mine);
-            }
+            MouseWheel(mine);
+
         }
 
 
     }
 
-    public void RightClick( Casilla mine ) {
+    public void RightClick( Casilla casilla ) {
         //right click
-        if( !mine.pulsado ) {
-            bool b = logicaBuscaminas.Flag(mine.X,mine.Y);
-            mine.Flag();
-        }
 
+        if( !casilla.pulsado ) {
+
+            if( casilla.bomb && !casilla.flag ) {
+                logicaBuscaminas.Flag(casilla.X,casilla.Y);
+                casilla.Flag();
+                casilla.Block();
+                ActualizarPuntuacion(true);
+            }else ActualizarPuntuacion(false);
+            Presentacion.ActualizarSeleccion(Casillas);
+
+        }
     }
+
+
 
     public void MouseWheel( Casilla mine ) {
         if( !mine.pulsado ) return;
 
 
-        List<Casilla> flag = ActionsOnBoard.CasillasAdyacentes(Casillas,mine).Where(x => x.flag).ToList();
-        List<Casilla> notFlagAndNotOpen = ActionsOnBoard.CasillasAdyacentes(Casillas,mine).Where(x => !x.pulsado && !x.flag).ToList();
+        List<Casilla> flag = Presentacion.CasillasAdyacentes(Casillas,mine).Where(x => x.flag).ToList();
+        List<Casilla> notFlagAndNotOpen = Presentacion.CasillasAdyacentes(Casillas,mine).Where(x => !x.pulsado && !x.flag).ToList();
         int bombsNeighbor = logicaBuscaminas.neighborBombs(mine.X,mine.Y);
         if( flag.Count.Equals(bombsNeighbor) ) {
             notFlagAndNotOpen.ForEach(x => {
@@ -138,19 +155,26 @@
                 bombsNeighbor = logicaBuscaminas.neighborBombs(x.X,x.Y);
                 if( bombsNeighbor == 0 ) {
                     x.MakeMove(0);
-                    ActionsOnBoard.RevealZeroSquaresRecursion(Casillas,x,logicaBuscaminas);
+                    Presentacion.RevealZeroSquaresRecursion(Casillas,x,logicaBuscaminas);
                 }
                 else {
                     if( logicaBuscaminas.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
                 }
             });
+            mine.Block();
+            if( !Presentacion.MovesLeftOnSelectedArea(Casillas) ) {
+                ActualizarPuntuacion(true);
+                Presentacion.ActualizarSeleccion(Casillas);
+            }
 
         }
-
-
     }
 
-
+    public void ActualizarPuntuacion(bool acierto ) {
+        var p = puntuacion.Item1;
+        p = acierto ? p + 1 : p - 1;
+        puntuacion = Tuple.Create(p,acierto);
+    }
 
 
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
     public class Casilla {
 
-
+        
         public bool isZero;
         public Boolean pulsado { get; set; }
         public String text;
@@ -16,8 +16,9 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
         public Color ColorEstado { get; set; }
         public bool bomb;
         public bool flag = false;
+
         public const string  original="purple";
-        public const string  cuadrado= "blue";
+        public const string  seleccionado= "blue";
 
 
         //ventana deslizante
@@ -57,8 +58,15 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
         }
 
         public void Seleccionar() {
-            this.seleccionadaCuadrado = cuadrado;
+            this.seleccionadaCuadrado = seleccionado;
         }
 
+        public void Block() {
+            this.isZero = true;
+        }
+
+        public bool isSelected() {
+            return this.seleccionadaCuadrado == seleccionado;
+        }
     }
 }

@@ -13,6 +13,7 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperLogic {
         public int FlagsRemaining { get; set; }
         public bool PlayerAlive { get; set; } = true;
 
+        public int totalBombs { get; }
 
 
         public MinesweeperLogic( int rows ) {
@@ -35,7 +36,7 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperLogic {
 
             BombsRemaining = bombs;
             FlagsRemaining = bombs;
-
+            totalBombs = BombsRemaining;
 
         }
         public bool Victory() {
