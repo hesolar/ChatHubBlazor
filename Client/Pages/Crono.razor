@@ -1,0 +1,52 @@
+﻿
+<button disabled="@(!ButtonStart)" @onclick="Start">Star</button> <br>
+<button @onclick="Pause" >Pause </button><br>
+<button @onclick="Stop">Stop</button><br>
+<input type="text" disabled @bind="@stopwachvalue" />
+
+@code {
+
+    int timeToMove=15;
+    TimeSpan stopwachvalue = new TimeSpan(0,0,15);
+    bool is_stowwachrunning = false;
+
+    bool ButtonStart=true;
+
+
+    async Task Start() {
+        ButtonStart = false;
+        is_stowwachrunning = true;
+        TimeLapse();
+    }
+
+
+
+    public void Stop() {
+        is_stowwachrunning = false;
+        this.stopwachvalue = new TimeSpan(0,0,timeToMove);
+        ButtonStart = true;
+    }
+
+    public void Pause() {
+        this.is_stowwachrunning = !is_stowwachrunning;
+        TimeLapse();
+    }
+
+    public async void TimeLapse() {
+
+        while( is_stowwachrunning ) {
+            await Task.Delay(100);
+            if( is_stowwachrunning && stopwachvalue.TotalSeconds > 0 ) {
+
+                stopwachvalue = stopwachvalue.Subtract(new TimeSpan(0,0,0,0,100));
+
+                StateHasChanged();
+            }
+            else is_stowwachrunning = false;
+        }
+
+    }
+
+
+
+}

@@ -3,17 +3,32 @@
 @using Client.Model.RoomRev.minesweeperLogic
 @using Client.Model.RoomRev.minesweeperPresentation
 
-<h3>This is the room revolution 2.0 ultra fixed new electric mechanical manager room id: @roomId, still working on it:</h3>
-
-<label for="puntuacion">Puntuacion:</label>
-<input type="text" value="@puntuacion.Item1" min="0" max="@logicaBuscaminas." step="1" disabled id="puntuacion" style="background-color:@(puntuacion.Item2? "green" : "red") " />
-
-<button @onclick=medirLos10SegundosConUnTask>Begin 10 seconds countdown to lost</button>
+<h3>This is the room rev 2.0 roomId: @roomId, still working on it:</h3>
 
 
-<br> Progress BAR: 
-<input type="range" value="@( logicaBuscaminas.totalBombs- logicaBuscaminas.FlagsRemaining)" disabled style="color:mediumpurple" min="0"  step="1" max="@logicaBuscaminas.totalBombs"/>
-<br>
+<div class="alert-info">
+    <h2> Chismes de puntuacion</h2>
+    <label for="puntuacion">Puntuacion:</label>
+    <input type="text" value="@puntuacion.Item1" min="0" max="@logicaBuscaminas." step="1" disabled id="puntuacion" style="background-color:@(puntuacion.Item2? "green" : "red") " />
+    <br> Progress BAR:
+    <input type="range" value="@( logicaBuscaminas.totalBombs- logicaBuscaminas.FlagsRemaining)" disabled style="color:mediumpurple" min="0" step="1" max="@logicaBuscaminas.totalBombs" />
+
+</div>
+
+<br >
+  
+<div class=" alert-dark">
+    <h2>Comenzar Partida</h2>
+    <br>
+    <label>Comenzar Partida</label>
+    <button disabled="@(!botonStartActivo)" @onclick="StartGame">Star</button>
+    <button @onclick="NewTourn">Stop</button>
+    <label>Tiempo de turno</label>
+    <input type="text" disabled @bind-value="@valorCronometro"/>
+</div>
+
+
+
 
 <div class="card">
     <BSContainer>
@@ -43,12 +58,14 @@
 
 
     @if( logicaBuscaminas.Victory() ) {
-        this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
-
-        Presentacion.EstadoOriginalTablero(Casillas);
+        
         <label> YOU WIN </label>
     }
 
+
+
+    <input type="text" disabled @bind="@valorCronometro" />
+    <button @onclick="StartGame"> Start </button>
 
 
 
@@ -56,17 +73,11 @@
 
 @code {
 
-    public void aux() {
-        Presentacion.ActualizarSeleccion(Casillas);
-    }
+
 
     [Parameter] public string roomId { set; get; }
 
     public Tuple<long,bool> puntuacion { get; set; } = new Tuple<long,bool>(0,true);
-
-
-
-
 
     const int rows = 20;
     //Logica buscaminas
@@ -75,19 +86,10 @@
     private List<List<Casilla>> Casillas { get; set; }
 
 
-    async Task medirLos10SegundosConUnTask() {
-        System.Diagnostics.Debug.WriteLine("Starting Tourn");
-        DateTime endTime = DateTime.UtcNow.AddSeconds(10);
-        while( DateTime.UtcNow < endTime ) {
-            await Task.Delay(100);
-        }
 
-        System.Diagnostics.Debug.WriteLine("Finished Tourn time");
-    }
 
     protected override async Task OnInitializedAsync() {
         await Task.FromResult(this.Casillas = Presentacion.crearTablero(rows,logicaBuscaminas));
-        Presentacion.ActualizarSeleccion(Casillas);
     }
 
 
@@ -118,8 +120,8 @@
                     else ActualizarPuntuacion(false);
 
                 }
-
-                Presentacion.ActualizarSeleccion(Casillas);
+                NewTourn();
+                //Presentacion.ActualizarSeleccion(Casillas);
             }
 
         }
@@ -138,13 +140,13 @@
                 casilla.Flag();
                 casilla.Block();
                 ActualizarPuntuacion(true);
-            }else ActualizarPuntuacion(false);
-            if(!this.logicaBuscaminas.Victory()) Presentacion.ActualizarSeleccion(Casillas);
+            }
+            else ActualizarPuntuacion(false);
+            if( !this.logicaBuscaminas.Victory() ) NewTourn();
+            //Presentacion.ActualizarSeleccion(Casillas);
 
         }
     }
-
-
 
     public void MouseWheel( Casilla mine ) {
         if( !mine.pulsado ) return;
@@ -169,16 +171,77 @@
             mine.Block();
             if( !Presentacion.MovesLeftOnSelectedArea(Casillas) ) {
                 ActualizarPuntuacion(true);
-                Presentacion.ActualizarSeleccion(Casillas);
+                NewTourn();
             }
 
         }
     }
 
-    public void ActualizarPuntuacion(bool acierto ) {
+    //Puntuaciones
+    public void ActualizarPuntuacion( bool acierto ) {
         var p = puntuacion.Item1;
         p = acierto ? p + 1 : p - 1;
         puntuacion = Tuple.Create(p,acierto);
+    }
+
+
+    //Crono
+    int timeToMove = 10;
+    TimeSpan valorCronometro ;
+    bool cronometroFuncionando = false;
+    bool botonStartActivo = true;
+
+    async Task StartGame() {
+        valorCronometro = new TimeSpan(0,0,timeToMove);
+        botonStartActivo = false;
+
+
+        Presentacion.UnlockBoard(Casillas);
+
+
+        Presentacion.ActualizarSeleccion(Casillas);
+
+        await TimeLapse();
+
+    }
+
+    public async Task NewTourn() {
+        Presentacion.ActualizarSeleccion(Casillas);
+        cronometroFuncionando = false;
+        this.valorCronometro = new TimeSpan(0,0,timeToMove);
+        botonStartActivo = true;
+
+        await TimeLapse();
+    }
+
+    public void Pause() {
+        this.cronometroFuncionando = !cronometroFuncionando;
+        TimeLapse();
+    }
+
+    public async Task TimeLapse() {
+        cronometroFuncionando = true;
+        while( cronometroFuncionando ) {
+            await Task.Delay(1);
+            if( cronometroFuncionando && valorCronometro.TotalSeconds > 0 ) {
+
+                valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
+
+                StateHasChanged();
+            }
+            else {
+                Presentacion.ActualizarSeleccion(Casillas);
+                valorCronometro = new TimeSpan(0,0,timeToMove);
+            }
+
+            if( this.logicaBuscaminas.Victory() ) {
+                this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
+
+                Presentacion.EstadoOriginalTablero(Casillas);
+                break;
+
+            }
+        }
     }
 
 

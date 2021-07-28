@@ -37,23 +37,7 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperLogic {
 
 
 
-    public async Task<bool> StartTimeLapse(  ) {
-        WasSuccesfull = true;
-        Canceller = new CancellationTokenSource();
-
-        Worker = Task<bool>.Factory.StartNew(() =>{
-            try {
-                // specify this thread's Abort() as the cancel delegate
-                Task.Delay(this.MilisecondstimeAvaliable);
-                return true;
-            }
-            catch( ThreadAbortException ) {
-                WasSuccesfull = false;
-                return false;
-            }
-        },Canceller.Token);
-        return Worker.Result;
-    }
+    
 
     public void AbortMovement() {
         Canceller.Cancel();

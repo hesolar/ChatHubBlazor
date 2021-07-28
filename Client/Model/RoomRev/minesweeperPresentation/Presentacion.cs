@@ -122,5 +122,8 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
             return currentWindow.Count != casillasSinMovimiento.Count;
         }
 
+        public static void UnlockBoard(List<List<Casilla>> casillas ) {
+            casillas.AsParallel().ToList().ForEach(x => x.ForEach(x => x.isZero = false));
+        }
     }
 }

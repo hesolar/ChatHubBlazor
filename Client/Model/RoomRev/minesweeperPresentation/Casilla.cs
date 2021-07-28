@@ -33,7 +33,7 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
             this.pulsado = false;
             this.bomb = bomb;
             this.text = "";
-            this.isZero = false;
+            this.isZero = true;
 
             this.seleccionadaCuadrado = original;
         }
