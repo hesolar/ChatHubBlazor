@@ -108,13 +108,14 @@
 
                         casilla.MakeMove(bombs);
 
-                        if( bombs==0 ) {
+                        if( bombs == 0 ) {
                             Presentacion.RevealZeroSquaresRecursion(Casillas,casilla,logicaBuscaminas);
                         }
 
                         ActualizarPuntuacion(true);
 
-                    }else ActualizarPuntuacion(false);
+                    }
+                    else ActualizarPuntuacion(false);
 
                 }
 
@@ -122,6 +123,7 @@
             }
 
         }
+        else MouseWheel(casilla);
 
 
     }
