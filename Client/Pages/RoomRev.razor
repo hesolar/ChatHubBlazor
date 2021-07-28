@@ -44,6 +44,8 @@
 
     @if( logicaBuscaminas.Victory() ) {
         this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
+
+        Presentacion.EstadoOriginalTablero(Casillas);
         <label> YOU WIN </label>
     }
 
@@ -66,7 +68,7 @@
 
 
 
-    const int rows = 10;
+    const int rows = 3;
     //Logica buscaminas
     private MinesweeperLogic logicaBuscaminas = new MinesweeperLogic(rows);
     //Presentacion
@@ -90,22 +92,24 @@
 
 
     //Aciones mouse
-    public void LeftClick( MouseEventArgs e,Casilla mine ) {
+    public void LeftClick( MouseEventArgs e,Casilla casilla ) {
         //left click
         if( e.Detail == 1 ) {
-            if( !mine.pulsado ) {
-                if( !logicaBuscaminas.IsButtonFlagged(mine.X,mine.Y) ) {
-                    bool alive = logicaBuscaminas.MakeMove(mine.X,mine.Y);
+            if( !casilla.pulsado ) {
+                if( !logicaBuscaminas.IsButtonFlagged(casilla.X,casilla.Y) ) {
 
-                    int bombs = logicaBuscaminas.neighborBombs(mine.X,mine.Y);
+                    if( !casilla.bomb ) {
+                        logicaBuscaminas.MakeMove(casilla.X,casilla.Y);
 
 
-                    if( alive ) {
-                        int bombsNeighb = logicaBuscaminas.neighborBombs(mine.X,mine.Y);
-                        mine.MakeMove(bombsNeighb);
 
-                        if( logicaBuscaminas.neighborBombs(mine.X,mine.Y).Equals(0) ) {
-                            Presentacion.RevealZeroSquaresRecursion(Casillas,mine,logicaBuscaminas);
+
+                        int bombs = logicaBuscaminas.neighborBombs(casilla.X,casilla.Y);
+
+                        casilla.MakeMove(bombs);
+
+                        if( bombs==0 ) {
+                            Presentacion.RevealZeroSquaresRecursion(Casillas,casilla,logicaBuscaminas);
                         }
 
                         ActualizarPuntuacion(true);
@@ -116,7 +120,6 @@
 
                 Presentacion.ActualizarSeleccion(Casillas);
             }
-            MouseWheel(mine);
 
         }
 
@@ -134,7 +137,7 @@
                 casilla.Block();
                 ActualizarPuntuacion(true);
             }else ActualizarPuntuacion(false);
-            Presentacion.ActualizarSeleccion(Casillas);
+            if(!this.logicaBuscaminas.Victory()) Presentacion.ActualizarSeleccion(Casillas);
 
         }
     }

@@ -25,12 +25,12 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
             return vecinos;
         }
 
-        static private List<List<Casilla>> EstadoOriginalTablero( List<List<Casilla>> Casillas ) {
+        static public List<List<Casilla>> EstadoOriginalTablero( List<List<Casilla>> Casillas ) {
             Casillas.ForEach(x => x.ForEach(y => y.EstadoOriginal()));
             return Casillas;
         }
 
-        static public List<List<Casilla>> RevealZeroSquaresRecursion( List<List<Casilla>> Casillas,Casilla casilla,MinesweeperLogic logicaBuscaminas ) {
+        static public void RevealZeroSquaresRecursion( List<List<Casilla>> Casillas,Casilla casilla,MinesweeperLogic logicaBuscaminas ) {
 
             List<Casilla> minesNeighbors = Presentacion.CasillasAdyacentes(Casillas,casilla);
 
@@ -39,28 +39,29 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
             notZeroMines.ForEach(z => z.MakeMove(logicaBuscaminas.neighborBombs(z.X,z.Y)));
 
             //las casillas con 0
-            var ZeroMines = minesNeighbors.Where(z => !z.flag && logicaBuscaminas.neighborBombs(z.X,z.Y)==0).ToList();
+            List<Casilla> ZeroMines = minesNeighbors.Where(z => !z.flag && logicaBuscaminas.neighborBombs(z.X,z.Y)==0 && !z.isZero).ToList();
 
             foreach( Casilla m in ZeroMines ) {
-                m.isZero = true;
+                m.Block();
                 m.MakeMove(0);
-                List<Casilla> a = Presentacion.CasillasAdyacentes(Casillas,casilla);
-                a.AsParallel().ToList().Where(x => !x.flag && logicaBuscaminas.neighborBombs(x.X,x.Y) != 0).ToList().ForEach(x => x.MakeMove(logicaBuscaminas.neighborBombs(x.X,x.Y)));
+                //List<Casilla> vecinos = Presentacion.CasillasAdyacentes(Casillas,casilla);
+                
+                //vecinos.AsParallel().ToList().Where(x => !x.flag && logicaBuscaminas.neighborBombs(x.X,x.Y) != 0).ToList().ForEach(x => x.MakeMove(logicaBuscaminas.neighborBombs(x.X,x.Y)));
 
-                List<Casilla> b = a.Where(x => !x.flag && logicaBuscaminas.neighborBombs(x.X,x.Y) == 0 && !x.pulsado).ToList();
-                b.AsParallel().ToList().ForEach(x => x.MakeMove(0));
-                b.AsParallel().ToList().ForEach(x => RevealZeroSquaresRecursion(Casillas,x,logicaBuscaminas));
+                //List<Casilla> b = vecinos.Where(x => !x.flag && logicaBuscaminas.neighborBombs(x.X,x.Y) == 0 && !x.isZero).ToList();
+                //b.AsParallel().ToList().ForEach(x => x.MakeMove(0));
+                RevealZeroSquaresRecursion(Casillas,m,logicaBuscaminas);
 
 
 
             }
-            return Casillas;
+
         }
 
         static public List<List<Casilla>> crearTablero( int rows,MinesweeperLogic logicaBuscaminas ) {
 
             Presentacion.rows = rows;
-            ventanaDeslizante = new VentanaDeslizante(5000,5,rows,10);
+            ventanaDeslizante = new VentanaDeslizante(5000,1,rows,10);
             //referencia
             var result = new List<List<Casilla>>();
             for( var x = 0; x < rows; x++ ) {
@@ -74,29 +75,29 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
 
         }
 
+      
+
         static public void ActualizarSeleccion( List<List<Casilla>> Casillas ) {
             EstadoOriginalTablero(Casillas);
-            ventanaDeslizante.DoMove(Casillas.SelectMany(x=>x.Where(x=>!x.isZero && !x.flag)).ToList());
+            List<Casilla> l = Casillas.SelectMany(x => x.Where(x => !x.isZero && !x.pulsado && !x.flag)).ToList();
+            ventanaDeslizante.GenerateNewSquare(l);
+         
             int xa, xb, ya, yb;
-            int aux;
-            ventanaDeslizante.getBorders(out xa,out xb,out ya,out yb);
-            if( xa > xb ) {
-                aux = xa;
-                xa = xb;
-                xb = aux;
-            }
-            if( ya > yb ) {
-                aux = ya;
-                ya = yb;
-                yb = aux;
-            }
+            List<int> listadoBordes = ventanaDeslizante.getBorders();
+
+            xa = listadoBordes[0];
+            xb = listadoBordes[1];
+            ya = listadoBordes[2];
+            yb = listadoBordes[3];
 
 
+           
 
-            List<Casilla> x = Casillas.SelectMany(x => x.Where(z => z.X > xa && z.X <= xb)).ToList();
-            List<Casilla> y = Casillas.SelectMany(x => x.Where(z => z.Y > ya && z.Y <= yb)).ToList();
+
+            List<Casilla> x = Casillas.SelectMany(x => x.Where(z => z.X >= xa && z.X <= xb)).ToList();
+            List<Casilla> y = Casillas.SelectMany(x => x.Where(z => z.Y >= ya && z.Y <= yb)).ToList();
             List<Casilla> xy = x.Intersect(y).ToList();
-           if(!ComprobarMovimientosEnCuadrado(Casillas,xy) ) {
+            if(!ComprobarMovimientosEnCuadrado(Casillas,xy) ) {
                 ActualizarSeleccion(Casillas);
                 return;
             }

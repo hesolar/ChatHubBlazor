@@ -60,50 +60,43 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperLogic {
     }
 
 
-    private void GenerateNewSquare() {
-        int xposible = this.rows - this.sizeRectangle;
-        Random r = new Random();
-        int x= r.Next(0,xposible);
-        int y = r.Next(0,xposible);
+    
 
-        this.xa = x;
-        this.ya = y;
-        this.xb = xa+ this.sizeRectangle;
-        this.yb = ya + this.sizeRectangle;
 
-     }
-    private void GenerateNewSquare2(int x, int y) {
-            int maximo = this.rows - this.sizeRectangle+1;
+        public void GenerateNewSquare(List<Casilla> l) {
+            Random r = new Random();
+            Casilla c =  l[r.Next(0,l.Count-1)];
             
-
-            this.xa = x;
-            this.ya = y;
-           
-
+            
+            int maximo = this.rows - this.sizeRectangle + 1;
+            this.xa =c.X;
+            this.ya = c.Y;
             this.xb = xa + this.sizeRectangle >= maximo ? xa - this.sizeRectangle : xa + this.sizeRectangle;
             this.yb = ya + this.sizeRectangle >= maximo ? ya - this.sizeRectangle : ya + this.sizeRectangle;
 
 
-    }
 
-        public void DoMove(List<Casilla> l) {
-            Random r = new Random();
-            Casilla c =  l[r.Next(0,l.Count-1)];
-            GenerateNewSquare2(c.X,c.Y); 
-
-
-            //MilisecondstimeAvaliable=this.MilisecondstimeAvaliable - this.decrementTime;
-            //bool PlayerCanContinueMoving =await StartTimeLapse();
-            //return PlayerCanContinueMoving;
         }
 
-    public void getBorders(out int xa,out int xb,out int ya , out int yb ) {
-        xa = this.xa;
-        ya = this.ya;
-       xb  = this.xb;
-        yb = this.yb;
+        public List<int> getBorders() {
+            int aux;
+            if( xa > xb ) {
+                aux = xa;
+                xa = xb;
+                xb = aux;
+            }
+            if( ya > yb ) {
+                aux = ya;
+                ya = yb;
+                yb = aux;
+            }
+
+
+
+            return new List<int> { this.xa,this.xb,this.ya,this.yb };
+        }
+        
     }
 
    
-}
 }
