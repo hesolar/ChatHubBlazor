@@ -61,7 +61,7 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
         static public List<List<Casilla>> crearTablero( int rows,MinesweeperLogic logicaBuscaminas ) {
 
             Presentacion.rows = rows;
-            ventanaDeslizante = new VentanaDeslizante(5000,1,rows,10);
+            ventanaDeslizante = new VentanaDeslizante(5000,4,rows,10);
             //referencia
             var result = new List<List<Casilla>>();
             for( var x = 0; x < rows; x++ ) {
