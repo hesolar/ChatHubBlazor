@@ -6,31 +6,28 @@
 <h3>This is the room rev 2.0 roomId: @roomId, still working on it:</h3>
 
 
-<div class="alert-info">
+<div class="alert-info" style="justify-content:center; width:contain; scroll-behavior:">
     <h2> Chismes de puntuacion</h2>
+    Flags:<input type="text" disabled value="@logicaBuscaminas.FlagsRemaining" />
     <label for="puntuacion">Puntuacion:</label>
-    <input type="text" value="@puntuacion.Item1" min="0" max="@logicaBuscaminas." step="1" disabled id="puntuacion" style="background-color:@(puntuacion.Item2? "green" : "red") " />
-    <br> Progress BAR:
+    <input type="number"
+           style="  background-color:@(puntuacion.Item2? "green" : "red");
+                    border: 1px solid #555;
+                    box-sizing: border-box;
+                    height: 20px;
+                    width: 80px"
+           value="@puntuacion.Item1" min="0" max="@logicaBuscaminas." step="1" disabled id="puntuacion" />
+
+    Progress BAR:
     <input type="range" value="@( logicaBuscaminas.totalBombs- logicaBuscaminas.FlagsRemaining)" disabled style="color:mediumpurple" min="0" step="1" max="@logicaBuscaminas.totalBombs" />
-
-</div>
-
-<br >
-  
-<div class=" alert-dark">
-    <h2>Comenzar Partida</h2>
-    <br>
-    <label>Comenzar Partida</label>
-    <button disabled="@(!botonStartActivo)" @onclick="StartGame">Star</button>
-    <button @onclick="NewTourn">Stop</button>
-    <label>Tiempo de turno</label>
-    <input type="text" disabled @bind-value="@valorCronometro"/>
 </div>
 
 
 
 
-<div class="card">
+
+
+<div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; ">
     <BSContainer>
 
         <h3>Board</h3>
@@ -38,7 +35,7 @@
         @foreach( var row in Casillas ) {
             <BSRow>
                 @foreach( Casilla casilla in row ) {
-                    <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals("purple"))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                    <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals(Casilla.original))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
                             @oncontextmenu=" () => RightClick(casilla)"
                             @onclick="( e ) =>  LeftClick(e,casilla)"
                             @onmousewheel="(e) =>  LeftClick(e,casilla)">
@@ -50,36 +47,36 @@
         }
     </BSContainer>
 
-    @*Indicadores
-        bombs Remaining:   @game.bombsRemaining <br />
-        bombs : @game.bombs <br />*@
-    flags: @logicaBuscaminas.FlagsRemaining
 
 
 
     @if( logicaBuscaminas.Victory() ) {
-        
+        this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
+
+        Presentacion.EstadoOriginalTablero(Casillas);
         <label> YOU WIN </label>
+        <label> Puntuacion Total: @puntuacion</label>
     }
 
-
+    <button hidden="@(!botonStartActivo)" @onclick="StartGame">Star</button>
 
     <input type="text" disabled @bind="@valorCronometro" />
-    <button @onclick="StartGame"> Start </button>
 
 
 
 </div>
+Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
+
 
 @code {
 
 
-
+    const int rows = 15;
     [Parameter] public string roomId { set; get; }
 
     public Tuple<long,bool> puntuacion { get; set; } = new Tuple<long,bool>(0,true);
 
-    const int rows = 20;
+
     //Logica buscaminas
     private MinesweeperLogic logicaBuscaminas = new MinesweeperLogic(rows);
     //Presentacion
@@ -94,7 +91,7 @@
 
 
     //Aciones mouse
-    public void LeftClick( MouseEventArgs e,Casilla casilla ) {
+    public async Task LeftClick( MouseEventArgs e,Casilla casilla ) {
         //left click
         if( e.Detail == 1 ) {
             if( !casilla.pulsado ) {
@@ -118,14 +115,16 @@
 
                     }
                     else ActualizarPuntuacion(false);
-
+                    await RestartNewTourn();
+                    return;
                 }
-                NewTourn();
-                //Presentacion.ActualizarSeleccion(Casillas);
+
+
             }
+            else MouseWheel(casilla);
 
         }
-        else MouseWheel(casilla);
+
 
 
     }
@@ -139,16 +138,15 @@
                 logicaBuscaminas.Flag(casilla.X,casilla.Y);
                 casilla.Flag();
                 casilla.Block();
-                ActualizarPuntuacion(true);
+                ActualizarPuntuacion(true,2);
             }
             else ActualizarPuntuacion(false);
-            if( !this.logicaBuscaminas.Victory() ) NewTourn();
-            //Presentacion.ActualizarSeleccion(Casillas);
-
+            if( !this.logicaBuscaminas.Victory() ) Presentacion.ActualizarSeleccion(Casillas);
+            RestartNewTourn();
         }
     }
 
-    public void MouseWheel( Casilla mine ) {
+    public async Task MouseWheel( Casilla mine ) {
         if( !mine.pulsado ) return;
 
 
@@ -171,33 +169,37 @@
             mine.Block();
             if( !Presentacion.MovesLeftOnSelectedArea(Casillas) ) {
                 ActualizarPuntuacion(true);
-                NewTourn();
+                Presentacion.ActualizarSeleccion(Casillas);
             }
-
+            ActualizarPuntuacion(true,1);
+            await RestartNewTourn();
         }
     }
 
     //Puntuaciones
-    public void ActualizarPuntuacion( bool acierto ) {
-        var p = puntuacion.Item1;
-        p = acierto ? p + 1 : p - 1;
+    public void ActualizarPuntuacion( bool acierto,int puntos = 1 ) {
+        long p = puntuacion.Item1;
+        p = acierto ? p + puntos : p - puntos;
         puntuacion = Tuple.Create(p,acierto);
     }
 
 
     //Crono
-    int timeToMove = 10;
-    TimeSpan valorCronometro ;
+    int casillasAbiertas = 0;
+    double timeToMove = 10;
+    TimeSpan valorCronometro;
     bool cronometroFuncionando = false;
     bool botonStartActivo = true;
 
-    async Task StartGame() {
-        valorCronometro = new TimeSpan(0,0,timeToMove);
-        botonStartActivo = false;
 
+    async Task StartGame() {
+        valorCronometro = new TimeSpan(0,0,11);
+        botonStartActivo = false;
+        cronometroFuncionando = true;
 
         Presentacion.UnlockBoard(Casillas);
 
+        await Task.Delay(2000);
 
         Presentacion.ActualizarSeleccion(Casillas);
 
@@ -205,43 +207,45 @@
 
     }
 
-    public async Task NewTourn() {
+    public async Task RestartNewTourn() {
+        casillasAbiertas++;
+        double difficulty= (double) (rows*rows-casillasAbiertas) / (double) (rows*rows) ;
+
+        Console.WriteLine(difficulty);
         Presentacion.ActualizarSeleccion(Casillas);
-        cronometroFuncionando = false;
-        this.valorCronometro = new TimeSpan(0,0,timeToMove);
-        botonStartActivo = true;
+        this.valorCronometro = new TimeSpan(0,0,0, (int)(1+Math.Round(timeToMove * difficulty)));
 
-        await TimeLapse();
-    }
-
-    public void Pause() {
+        //botonStartActivo = true;
         this.cronometroFuncionando = !cronometroFuncionando;
-        TimeLapse();
+        await TimeLapse();
     }
 
     public async Task TimeLapse() {
-        cronometroFuncionando = true;
-        while( cronometroFuncionando ) {
+        Console.WriteLine("entrada");
+        Task.Delay(500);
+        while( cronometroFuncionando && !logicaBuscaminas.Victory() ) {
             await Task.Delay(1);
             if( cronometroFuncionando && valorCronometro.TotalSeconds > 0 ) {
 
-                valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
+                valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,200));
 
                 StateHasChanged();
             }
             else {
+                valorCronometro = new TimeSpan(0,0,(int) (1+Math.Round(timeToMove)));
+                cronometroFuncionando = true;
+                ActualizarPuntuacion(false,5);
+                await Task.Delay(500);
                 Presentacion.ActualizarSeleccion(Casillas);
-                valorCronometro = new TimeSpan(0,0,timeToMove);
-            }
 
-            if( this.logicaBuscaminas.Victory() ) {
-                this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
-
-                Presentacion.EstadoOriginalTablero(Casillas);
-                break;
 
             }
+
         }
+        cronometroFuncionando = true;
+        Console.WriteLine("hello");
+
+
     }
 
 

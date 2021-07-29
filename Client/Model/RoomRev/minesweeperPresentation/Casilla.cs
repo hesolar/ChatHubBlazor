@@ -17,8 +17,8 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
         public bool bomb;
         public bool flag = false;
 
-        public const string  original="purple";
-        public const string  seleccionado= "blue";
+        public static  string  original="white";
+        public static  string  seleccionado= "grey";
 
 
         //ventana deslizante

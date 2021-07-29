@@ -2,10 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
     //Ventana deslizante
 
+    
 
 
 
@@ -14,7 +16,7 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
 
 
        public static int rows { get; set; }
-
+        public const int sizeWindow= 4;
 
         static public VentanaDeslizante ventanaDeslizante ;
 
@@ -29,6 +31,10 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
             Casillas.ForEach(x => x.ForEach(y => y.EstadoOriginal()));
             return Casillas;
         }
+        public async static  Task EstadoOriginalTableroAsync( List<List<Casilla>> Casillas ) {
+           await Task.Run(()=> Casillas.AsParallel().ToList().ForEach(x => x.ForEach(y => y.EstadoOriginal())));
+        }
+
 
         static public void RevealZeroSquaresRecursion( List<List<Casilla>> Casillas,Casilla casilla,MinesweeperLogic logicaBuscaminas ) {
 
@@ -61,7 +67,7 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
         static public List<List<Casilla>> crearTablero( int rows,MinesweeperLogic logicaBuscaminas ) {
 
             Presentacion.rows = rows;
-            ventanaDeslizante = new VentanaDeslizante(5000,4,rows,10);
+            ventanaDeslizante = new VentanaDeslizante(5000,sizeWindow,rows,10);
             //referencia
             var result = new List<List<Casilla>>();
             for( var x = 0; x < rows; x++ ) {
@@ -124,6 +130,15 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
 
         public static void UnlockBoard(List<List<Casilla>> casillas ) {
             casillas.AsParallel().ToList().ForEach(x => x.ForEach(x => x.isZero = false));
+        }
+
+        public static void LockBoard( List<List<Casilla>> casillas ) {
+            casillas.AsParallel().ToList().ForEach(x => x.ForEach(x => x.seleccionadaCuadrado = Casilla.original));
+        }
+
+        public static int CasillasSinUsar(List<List<Casilla>> casillas ) {
+
+            return casillas.SelectMany(x => x.Where(x => !x.pulsado || !x.flag || !x.isZero)).ToList().Count();
         }
     }
 }
