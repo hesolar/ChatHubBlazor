@@ -36,16 +36,18 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
         }
 
 
-        static public void RevealZeroSquaresRecursion( List<List<Casilla>> Casillas,Casilla casilla,MinesweeperLogic logicaBuscaminas ) {
-
+        static public int RevealZeroSquaresRecursion( List<List<Casilla>> Casillas,Casilla casilla,MinesweeperLogic logicaBuscaminas,int casillasAbiertas=0 ) {
+            
             List<Casilla> minesNeighbors = Presentacion.CasillasAdyacentes(Casillas,casilla);
 
             //las no zero las despliego
             var notZeroMines = minesNeighbors.Where(x => !x.flag && logicaBuscaminas.neighborBombs(x.X,x.Y) != 0).ToList();
             notZeroMines.ForEach(z => z.MakeMove(logicaBuscaminas.neighborBombs(z.X,z.Y)));
-
+            casillasAbiertas += notZeroMines.Count;
             //las casillas con 0
             List<Casilla> ZeroMines = minesNeighbors.Where(z => !z.flag && logicaBuscaminas.neighborBombs(z.X,z.Y)==0 && !z.isZero).ToList();
+            casillasAbiertas += ZeroMines.Count;
+
 
             foreach( Casilla m in ZeroMines ) {
                 m.Block();
@@ -58,10 +60,10 @@ namespace BlazorApp.Client.Model.RoomRev.minesweeperPresentation {
                 //b.AsParallel().ToList().ForEach(x => x.MakeMove(0));
                 RevealZeroSquaresRecursion(Casillas,m,logicaBuscaminas);
 
-
+               
 
             }
-
+            return casillasAbiertas;
         }
 
         static public List<List<Casilla>> crearTablero( int rows,MinesweeperLogic logicaBuscaminas ) {

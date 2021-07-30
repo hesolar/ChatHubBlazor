@@ -6,20 +6,30 @@
 <h3>This is the room rev 2.0 roomId: @roomId, still working on it:</h3>
 
 
-<div class="alert-info" style="justify-content:center; width:contain; scroll-behavior:">
-    <h2> Chismes de puntuacion</h2>
-    Flags:<input type="text" disabled value="@logicaBuscaminas.FlagsRemaining" />
+
+
+
+
+<div class="alert-info" style="justify-content: center; width: fit-content; scroll-behavior: auto; align-content: center">
+    <h2> Score Pointers</h2>
+
+
+
+    Flags Remaining:<input type="text" style="width:30px" disabled value="@logicaBuscaminas.FlagsRemaining" />
     <label for="puntuacion">Puntuacion:</label>
     <input type="number"
-           style="  background-color:@(puntuacion.Item2? "green" : "red");
+           style="  background-color:@(puntuacion.Item2 ? "green" : "red");
                     border: 1px solid #555;
                     box-sizing: border-box;
                     height: 20px;
                     width: 80px"
            value="@puntuacion.Item1" min="0" max="@logicaBuscaminas." step="1" disabled id="puntuacion" />
 
-    Progress BAR:
-    <input type="range" value="@( logicaBuscaminas.totalBombs- logicaBuscaminas.FlagsRemaining)" disabled style="color:mediumpurple" min="0" step="1" max="@logicaBuscaminas.totalBombs" />
+    <br />  Progressbar: <input type="range" value="@( logicaBuscaminas.totalBombs - logicaBuscaminas.FlagsRemaining)" disabled style="color:mediumpurple" min="0" step="1" max="@logicaBuscaminas.totalBombs" />
+
+
+
+
 </div>
 
 
@@ -37,8 +47,8 @@
                 @foreach( Casilla casilla in row ) {
                     <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals(Casilla.original))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
                             @oncontextmenu=" () => RightClick(casilla)"
-                            @onclick="( e ) =>  LeftClick(e,casilla)"
-                            @onmousewheel="(e) =>  LeftClick(e,casilla)">
+                            @onclick="( e ) => LeftClick(e,casilla)"
+                            @onmousewheel="( e ) => LeftClick(e,casilla)">
                         <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
                     </button>
                 }
@@ -55,17 +65,34 @@
 
         Presentacion.EstadoOriginalTablero(Casillas);
         <label> YOU WIN </label>
-        <label> Puntuacion Total: @puntuacion</label>
+        <label> Puntuacion Total: @puntuacion.Item1</label>
     }
 
     <button hidden="@(!botonStartActivo)" @onclick="StartGame">Star</button>
 
-    <input type="text" disabled @bind="@valorCronometro" />
-
-
-
+    <input type="text" disabled @bind="@valorCronometro" style="background-color:@getColor()" />
+  
 </div>
-Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
+
+Tiempo Turno:@{
+    double difficulty = (double) (rows * rows - dificultad) / (double) (rows * rows);
+
+
+    <label>@( (1+(timeToMove * difficulty)).ToString("0.000"))</label>
+}
+<div class="card-header-pills" style="width:fit-content; border-block-color:purple; background-color:Highlight; border-width:10px; ">
+    <h3>¿How score works?</h3>
+
+    <span class="oi oi-loop-square" aria-hidden="true"> +1 Point openning squares: </span>
+    <span class="oi oi-flag" aria-hidden="true">+2 Points Flag a square:</span>
+    <span class="oi oi-delete" aria-hidden="true">-5 Points for Failing:</span> <br>
+
+    The positive actions will be multiplied by the remaining time!
+    Good luck!
+</div>
+
+
+
 
 
 @code {
@@ -108,13 +135,13 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
                         casilla.MakeMove(bombs);
 
                         if( bombs == 0 ) {
-                            Presentacion.RevealZeroSquaresRecursion(Casillas,casilla,logicaBuscaminas);
+                            this.dificultad += Presentacion.RevealZeroSquaresRecursion(Casillas,casilla,logicaBuscaminas);
                         }
 
-                        ActualizarPuntuacion(true);
+                        ActualizarPuntuacion(true,(long) (valorCronometro.TotalSeconds));
 
                     }
-                    else ActualizarPuntuacion(false);
+                    else ActualizarPuntuacion(false,5);
                     await RestartNewTourn();
                     return;
                 }
@@ -138,7 +165,7 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
                 logicaBuscaminas.Flag(casilla.X,casilla.Y);
                 casilla.Flag();
                 casilla.Block();
-                ActualizarPuntuacion(true,2);
+                ActualizarPuntuacion(true,(long) (2 * this.valorCronometro.TotalSeconds));
             }
             else ActualizarPuntuacion(false);
             if( !this.logicaBuscaminas.Victory() ) Presentacion.ActualizarSeleccion(Casillas);
@@ -160,7 +187,7 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
                 bombsNeighbor = logicaBuscaminas.neighborBombs(x.X,x.Y);
                 if( bombsNeighbor == 0 ) {
                     x.MakeMove(0);
-                    Presentacion.RevealZeroSquaresRecursion(Casillas,x,logicaBuscaminas);
+                    this.dificultad += Presentacion.RevealZeroSquaresRecursion(Casillas,x,logicaBuscaminas);
                 }
                 else {
                     if( logicaBuscaminas.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
@@ -171,13 +198,13 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
                 ActualizarPuntuacion(true);
                 Presentacion.ActualizarSeleccion(Casillas);
             }
-            ActualizarPuntuacion(true,1);
+            ActualizarPuntuacion(true,(long) (this.valorCronometro.TotalSeconds));
             await RestartNewTourn();
         }
     }
 
     //Puntuaciones
-    public void ActualizarPuntuacion( bool acierto,int puntos = 1 ) {
+    public void ActualizarPuntuacion( bool acierto,long puntos = 1 ) {
         long p = puntuacion.Item1;
         p = acierto ? p + puntos : p - puntos;
         puntuacion = Tuple.Create(p,acierto);
@@ -185,7 +212,7 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
 
 
     //Crono
-    int casillasAbiertas = 0;
+    int dificultad = 0;
     double timeToMove = 10;
     TimeSpan valorCronometro;
     bool cronometroFuncionando = false;
@@ -207,13 +234,17 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
 
     }
 
-    public async Task RestartNewTourn() {
-        casillasAbiertas++;
-        double difficulty= (double) (rows*rows-casillasAbiertas) / (double) (rows*rows) ;
 
-        Console.WriteLine(difficulty);
+
+
+
+    public async Task RestartNewTourn() {
+        dificultad++;
+        double difficulty = (double) (rows * rows - dificultad) / (double) (rows * rows);
+
         Presentacion.ActualizarSeleccion(Casillas);
-        this.valorCronometro = new TimeSpan(0,0,0, (int)(1+Math.Round(timeToMove * difficulty)));
+        this.valorCronometro = new TimeSpan(0,0,0,(int) Math.Round(1 + (difficulty * timeToMove)));
+
 
         //botonStartActivo = true;
         this.cronometroFuncionando = !cronometroFuncionando;
@@ -232,7 +263,7 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
                 StateHasChanged();
             }
             else {
-                valorCronometro = new TimeSpan(0,0,(int) (1+Math.Round(timeToMove)));
+                valorCronometro = new TimeSpan(0,0,(int) (1 + Math.Round(timeToMove)));
                 cronometroFuncionando = true;
                 ActualizarPuntuacion(false,5);
                 await Task.Delay(500);
@@ -248,6 +279,14 @@ Tiempo Turno:@((1+timeToMove).ToString("0.000")) seconds.
 
     }
 
+    public string getColor() {
+
+        var tiempo = valorCronometro.TotalSeconds;
+        if( tiempo > 7 ) return "green";
+        if( tiempo > 4 ) return "orange";
+
+        else return "red";
+    }
 
 
 
