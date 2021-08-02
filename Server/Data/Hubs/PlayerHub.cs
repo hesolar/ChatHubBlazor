@@ -5,13 +5,12 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Server.Data {
-    public class BlazorChatSampleHub :Hub {
-        public const string HubUrl = "/chat";
+    public class PlayerHub :Hub {
+        public const string HubUrl = "/player";
 
-        public async Task Broadcast( string username,string message ) {
-            await Clients.All.SendAsync("Broadcast",username,message);
+        public async Task BroadcastPlayers(string username) {
+            await Clients.All.SendAsync("BroadcastPlayers",username);
         }
-
         public override Task OnConnectedAsync() {
             Console.WriteLine($"{Context.ConnectionId} connected");
             return base.OnConnectedAsync();
