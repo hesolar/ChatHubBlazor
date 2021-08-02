@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlazorStrap;
 
 namespace Server {
     public class Startup {
@@ -24,6 +25,7 @@ namespace Server {
         public void ConfigureServices( IServiceCollection services ) {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddBootstrapCss();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -4,7 +4,8 @@
 @using Server.Data
 @using Microsoft.AspNetCore.WebUtilities
 @using Microsoft.Extensions.Primitives;
-
+@using Server.Data.Model
+@using blaz
 <h3>ChatRoom</h3>
 
 
@@ -15,42 +16,42 @@
 <button type="button" @onclick="@BeginChat" hidden="@(this.userConnected)"><span class="oi oi-chat" aria-hidden="true"></span> Chat!</button>
 
 
-
+<provisional_board></provisional_board>
 
 
 
 
 @if( this.userConnected ) {
-  
-    
-<div class="card">
-    <br>
-    <label>banner to show current user</label>
-    <div class="alert alert-secondary mt-4" role="alert">
-        <span class="oi oi-person mr-2" aria-hidden="true"></span>
-        <span>You are connected as <b>@username</b></span>
-        <button class="btn btn-sm btn-warning ml-md-auto" @onclick="@DisconnectAsync">Disconnect</button>
-    </div>
 
 
-    <label>Messages</label>
-    <div id="scrollbox">
-        @foreach( var item in msgs ) {
-            @if( item.IsNotice ) {
-                <div class="alert alert-info">@item.Body</div>
+    <div class="card">
+        <br>
+        <label>banner to show current user</label>
+        <div class="alert alert-secondary mt-4" role="alert">
+            <span class="oi oi-person mr-2" aria-hidden="true"></span>
+            <span>You are connected as <b>@username</b></span>
+            <button class="btn btn-sm btn-warning ml-md-auto" @onclick="@DisconnectAsync">Disconnect</button>
+        </div>
+
+
+        <label>Messages</label>
+        <div id="scrollbox">
+            @foreach( var item in msgs ) {
+                @if( item.IsNotice ) {
+                    <div class="alert alert-info">@item.Body</div>
+                }
+                else {
+                    <div class="@item.CSS">
+                        <div class="user">@item.Username</div>
+                        <div class="msg">@item.Body</div>
+                    </div>
+                }
             }
-            else {
-                <div class="@item.CSS">
-                    <div class="user">@item.Username</div>
-                    <div class="msg">@item.Body</div>
-                </div>
-            }
-        }
-        <hr />
-        <textarea class="input-lg" placeholder="enter your comment" @bind="@newmsg"></textarea>
+            <hr />
+            <textarea class="input-lg" placeholder="enter your comment" @bind="@newmsg"></textarea>
 
-        <input type="button" @onclick="@(() => SendAsync(newmsg))" value="Send" />
-    </div>
+            <input type="button" @onclick="@(() => SendAsync(newmsg))" value="Send" />
+        </div>
 
 
     </div>
@@ -59,11 +60,9 @@
 
 
 @code {
-
+    /*parameters in url */
     protected override void OnInitialized() {
         ReadQueryString();
-
-
     }
     public void ReadQueryString() {
         StringValues roomId;
@@ -77,22 +76,18 @@
         }
     }
 
+
     public string roomid { set; get; }
     public string username { set; get; }
 
-    // flag to indicate chat status
+
+
+    // flag to indicate player status
     private bool userConnected = false;
-
-    // name of the user who will be chatting
-
-
-
 
 
     // on-screen message
     private string msg;
-
-
     // new message input
     private string newmsg;
 
@@ -104,7 +99,7 @@
 
     public async Task BeginChat() {
 
-        if( !validateUserName()) return;
+        if( !validateUserName() ) return;
         //gestionar si no existe otro usuario con ese tag y la partida no ha comenzado
         try {
             // Start chatting and force refresh UI.
@@ -140,14 +135,6 @@
         return !string.IsNullOrEmpty(this.username.Trim());
     }
 
-
-
-
-
-
-
-
-
     private void BroadcastMessage( string name,string message ) {
         bool isMine = name.Equals(username,StringComparison.OrdinalIgnoreCase);
 
@@ -156,10 +143,6 @@
         // Inform blazor the UI needs updating
         StateHasChanged();
     }
-
-
-
-
 
     private async Task DisconnectAsync() {
         if( userConnected ) {
@@ -184,23 +167,5 @@
         }
     }
 
-    private class Message {
 
-        public string Username { get; set; }
-        public string Body { get; set; }
-        public bool Mine { get; set; }
-
-
-        public Message( string username,string body,bool mine ) {
-            Username = username;
-            Body = body;
-            Mine = mine;
-        }
-
-
-
-        public bool IsNotice => Body.StartsWith("[Notice]");
-
-        public string CSS => Mine ? "sent" : "received";
-    }
 }

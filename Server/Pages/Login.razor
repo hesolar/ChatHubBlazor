@@ -47,6 +47,7 @@
 
     public void GoToRoom() {
         String RoomId = RoomCoderGenerator(5);
+        if( string.IsNullOrEmpty(username) ) username = RoomCoderGenerator(6);
         UriHelp.NavigateTo($"../chatroom?roomid={RoomId}&username={username}");
     }
 
