@@ -119,7 +119,7 @@
             await Task.Delay(1);
 
             // remove old messages if any
-            msgs.Clear();
+            //msgs.Clear();
 
             // Create the chat client
             string baseUrl = navigationManager.BaseUri;
@@ -188,6 +188,7 @@
 
 
             userConnected = false;
+            StateHasChanged();
         }
     }
 
