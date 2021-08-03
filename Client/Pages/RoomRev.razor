@@ -31,7 +31,6 @@
 
 
 
-
 </div>
 
 
@@ -45,19 +44,26 @@
         <h3>Board</h3>
 
         @foreach( var row in Casillas ) {
-            <BSRow>
-                @foreach( Casilla casilla in row ) {
-                <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals(Casilla.original))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
-                        @oncontextmenu=" () => RightClick(casilla)"
-                        @onclick="( e ) => LeftClick(e,casilla)"
-                        @onmousewheel="( e ) => LeftClick(e,casilla)">
-                    @if( !casilla.flag ) { <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>}
-                    else {<img src="icon/descarga.png" id="a" />}
+    <BSRow>
+        @foreach( Casilla casilla in row ) {
+        <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals(Casilla.original))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                @oncontextmenu=" () => RightClick(casilla)"
+                @onclick="( e ) => LeftClick(e,casilla)"
+                @onmousewheel="( e ) => LeftClick(e,casilla)">
+            @*@if( !casilla.flag ) {*@
+            <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
+            @*}
+        else {
+           <img src="images/aa.png"  />
 
-                </button>
-                }
+        }*@
 
-            </BSRow>
+        </button>
+        }
+
+
+
+    </BSRow>
         }
     </BSContainer>
 
@@ -82,7 +88,7 @@ Tiempo Turno:@{
     double difficulty = (double) (rows * rows - dificultad) / (double) (rows * rows);
 
 
-    <label>@( (1+(timeToMove * difficulty)).ToString("0.000"))</label>
+    <label>@( ((timeToMove * difficulty)).ToString("0.000"))</label>
 }
 <div class="card-header-pills" style="width:fit-content; border-block-color:purple; background-color:Highlight; border-width:10px; ">
     <h3>¿How score works?</h3>
@@ -225,7 +231,7 @@ Tiempo Turno:@{
 
 
     async Task StartGame() {
-        valorCronometro = new TimeSpan(0,0,11);
+        valorCronometro = new TimeSpan(0,0,10);
         botonStartActivo = false;
         cronometroFuncionando = true;
 
@@ -263,12 +269,12 @@ Tiempo Turno:@{
             await Task.Delay(1);
             if( cronometroFuncionando && valorCronometro.TotalSeconds > 0 ) {
 
-                valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,200));
+                valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
 
                 StateHasChanged();
             }
             else {
-                valorCronometro = new TimeSpan(0,0,(int) (1 + Math.Round(timeToMove)));
+                valorCronometro = new TimeSpan(0,0,(int) ( Math.Round(timeToMove)));
                 cronometroFuncionando = true;
                 ActualizarPuntuacion(false,5);
                 await Task.Delay(500);

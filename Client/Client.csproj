@@ -22,6 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\images\descarga.png" />
+    <None Include="wwwroot\images\flag.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BlazorStrap" Version="1.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="3.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Build" Version="3.2.1" PrivateAssets="all" />

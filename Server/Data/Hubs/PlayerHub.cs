@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Server.Data {
-    [HubName("Player")]
     public class PlayerHub :Hub {
         public const string HubUrl = "/player";
 
@@ -28,11 +27,7 @@ namespace Server.Data {
             await Clients.All.SendAsync("DeletePlayers",username);
     
         }
-        //public async Task<List<Player>> getAllPlayers() {
-        
-         
-        //    await playerHub.
-        //}
+
 
 
 
