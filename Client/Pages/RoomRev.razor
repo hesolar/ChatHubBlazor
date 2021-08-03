@@ -47,12 +47,14 @@
         @foreach( var row in Casillas ) {
             <BSRow>
                 @foreach( Casilla casilla in row ) {
-                    <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals(Casilla.original))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
-                            @oncontextmenu=" () => RightClick(casilla)"
-                            @onclick="( e ) => LeftClick(e,casilla)"
-                            @onmousewheel="( e ) => LeftClick(e,casilla)">
-                        <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
-                    </button>
+                <button disabled="@(casilla.isZero || casilla.seleccionadaCuadrado.Equals(Casilla.original))" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                        @oncontextmenu=" () => RightClick(casilla)"
+                        @onclick="( e ) => LeftClick(e,casilla)"
+                        @onmousewheel="( e ) => LeftClick(e,casilla)">
+                    @if( !casilla.flag ) { <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>}
+                    else {<img src="icon/descarga.png" id="a" />}
+
+                </button>
                 }
 
             </BSRow>
@@ -100,8 +102,8 @@ Tiempo Turno:@{
 @code {
 
 
-    const int rows = 15;
-    [Parameter] public string roomId { set; get; }
+        const int rows = 15;
+        [Parameter] public string roomId { set; get; }
 
     public Tuple<long,bool> puntuacion { get; set; } = new Tuple<long,bool>(0,true);
 
@@ -160,18 +162,19 @@ Tiempo Turno:@{
 
     public void RightClick( Casilla casilla ) {
         //right click
+        if( casilla.isSelected() ) {
+            if( !casilla.pulsado && !casilla.isZero ) {
 
-        if( !casilla.pulsado ) {
-
-            if( casilla.bomb && !casilla.flag ) {
-                logicaBuscaminas.Flag(casilla.X,casilla.Y);
-                casilla.Flag();
-                casilla.Block();
-                ActualizarPuntuacion(true,(long) (2 * this.valorCronometro.TotalSeconds));
+                if( casilla.bomb && !casilla.flag ) {
+                    logicaBuscaminas.Flag(casilla.X,casilla.Y);
+                    casilla.Flag();
+                    casilla.Block();
+                    ActualizarPuntuacion(true,(long) (2 * this.valorCronometro.TotalSeconds));
+                }
+                else ActualizarPuntuacion(false);
+                if( !this.logicaBuscaminas.Victory() ) Presentacion.ActualizarSeleccion(Casillas);
+                RestartNewTourn();
             }
-            else ActualizarPuntuacion(false);
-            if( !this.logicaBuscaminas.Victory() ) Presentacion.ActualizarSeleccion(Casillas);
-            RestartNewTourn();
         }
     }
 

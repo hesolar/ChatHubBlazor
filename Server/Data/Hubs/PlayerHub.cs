@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Server.Data {
+    [HubName("Player")]
     public class PlayerHub :Hub {
         public const string HubUrl = "/player";
 
@@ -20,5 +22,20 @@ namespace Server.Data {
             Console.WriteLine($"Disconnected {e?.Message} {Context.ConnectionId}");
             await base.OnDisconnectedAsync(e);
         }
+
+
+        public async Task DeletePlayers( string username,string message ) {
+            await Clients.All.SendAsync("DeletePlayers",username);
+    
+        }
+        //public async Task<List<Player>> getAllPlayers() {
+        
+         
+        //    await playerHub.
+        //}
+
+
+
+
     }
 }

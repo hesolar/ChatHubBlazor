@@ -54,8 +54,8 @@
         <span>
             Players connected in this room:
 
-            @foreach( String s in this.PlayersConnected ) {
-                <span class="oi oi-person mr-2" aria-hidden="true">@s</span>
+            @foreach( Player s in this.PlayersConnected ) {
+                <span class="oi oi-person mr-2" aria-hidden="true">@s.idPlayer</span>
             }
 
         </span>
@@ -100,7 +100,7 @@
 
     // list of messages in chat
     private List<Message> msgs = new ();
-    private List<String> PlayersConnected = new();
+    private List<Player> PlayersConnected = new();
     private string _hubUrl;
     private HubConnection chatHubConnection;
     private HubConnection PlayersHubConnection;
@@ -167,20 +167,33 @@
     }
 
     private void BroadcastPlayers(String username) {
-        PlayersConnected.Add(username);
+        PlayersConnected.Add(new Player(username));
+        StateHasChanged();
+    }
+    private void DeletePlayers( String username ) {
+        Player p = PlayersConnected.Where(x => x.idPlayer == username).First();
+        PlayersConnected.Remove(p);
+        StateHasChanged();
+    }
+
+    public void getAllPlayers() {
         StateHasChanged();
     }
 
 
     private async Task DisconnectAsync() {
         if( userConnected ) {
+
+
             await SendInfoMessageAsync($"[Notice] {username} left room.");
             //PlayersConnected.Remove(username);
             await chatHubConnection.StopAsync();
             await chatHubConnection.DisposeAsync();
             chatHubConnection = null;
 
-            this.PlayersConnected.Remove(username);
+
+            Player p = this.PlayersConnected.Single(x => x.idPlayer == username);
+            this.PlayersConnected.Remove(p);
 
             await PlayersHubConnection.StopAsync();
             await PlayersHubConnection.DisposeAsync();
@@ -196,7 +209,6 @@
         if( userConnected && !string.IsNullOrWhiteSpace(message) ) {
 
             await PlayersHubConnection.SendAsync("BroadcastPlayers",username);
-
             await chatHubConnection.SendAsync("Broadcast",username,message);
 
             newmsg = string.Empty;
