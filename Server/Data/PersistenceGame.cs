@@ -1,4 +1,4 @@
-﻿using BlazorApp.Server.Data.Model.minesweeperLogic;
+﻿using BlazorApp.Server.Data.Model.MinesweeperLogic;
 using System;
 using System.Collections.Generic;
 using System.Linq;

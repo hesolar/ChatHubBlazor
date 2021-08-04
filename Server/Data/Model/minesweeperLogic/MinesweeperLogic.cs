@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorApp.Server.Data.Model.minesweeperLogic {
+namespace BlazorApp.Server.Data.Model.MinesweeperLogic {
     public class MinesweeperLogic {
         
         private readonly List<GameBoxButton> LittleBoxesOnTheHilltop;
@@ -11,10 +11,11 @@ namespace BlazorApp.Server.Data.Model.minesweeperLogic {
         public int BombsRemaining { get; set; }
         public int FlagsRemaining { get; set; }
         public bool PlayerAlive { get; set; } = true;
-
+        public int rows { get; set; }
 
 
         public MinesweeperLogic( int rows ) {
+            this.rows = rows;
             Random s_Generator = new Random();
             this.LittleBoxesOnTheHilltop = new List<GameBoxButton>();
             bombs = 0;
@@ -42,7 +43,7 @@ namespace BlazorApp.Server.Data.Model.minesweeperLogic {
         }
 
         public bool MakeMove( int cx,int cy ) {
-            GameBoxButton gb = this.LittleBoxesOnTheHilltop.Where(x => x.X.Equals(cx) && x.Y.Equals(cy)).First();
+            GameBoxButton gb = this.LittleBoxesOnTheHilltop.Where(x => x.XId.Equals(cx) && x.YId.Equals(cy)).First();
             this.PlayerAlive = gb.RevealT_ExplodedF();
             if( PlayerAlive ) {
                 if( gb.bombsNeighbor.Equals(0) ) {
@@ -59,9 +60,9 @@ namespace BlazorApp.Server.Data.Model.minesweeperLogic {
         }
         private void RevealZeroSquaresNeighbors( int cx,int cy ) {
             //saco adyacentes con 0 bombas y los muestro
-            var l=LittleBoxesOnTheHilltop.Where(panel => panel.X == (cx - 1) && panel.X <= (cx + 1)
-                                                && panel.Y >= (cy - 1) && panel.Y <= (cy + 1)).ToList();
-            l.ForEach(x => MakeMove(x.X,x.Y));
+            var l=LittleBoxesOnTheHilltop.Where(panel => panel.XId == (cx - 1) && panel.XId <= (cx + 1)
+                                                && panel.YId >= (cy - 1) && panel.YId <= (cy + 1)).ToList();
+            l.ForEach(x => MakeMove(x.XId,x.YId));
 
         }
         private List<GameBoxButton> LostGame() {
@@ -70,7 +71,7 @@ namespace BlazorApp.Server.Data.Model.minesweeperLogic {
 
         //true if can flag a box, false no flags left
         public bool Flag( int cx,int cy ) {
-            GameBoxButton gb = this.LittleBoxesOnTheHilltop.Where(x => x.X.Equals(cx) && x.Y.Equals(cy)).Single();
+            GameBoxButton gb = this.LittleBoxesOnTheHilltop.Where(x => x.XId.Equals(cx) && x.YId.Equals(cy)).Single();
 
             bool b = gb.Flag();
 
@@ -95,26 +96,26 @@ namespace BlazorApp.Server.Data.Model.minesweeperLogic {
         private void LoadBombsNeighbors( ) {
             Func<int,int,int> neighborBombs = ( cx,cy ) => {
 
-                var lista = LittleBoxesOnTheHilltop.Where(t => t.IsBomb && (t.X + 1 == cx || t.X - 1 == cx || t.X == cx))
-                   .Intersect(LittleBoxesOnTheHilltop.Where(t => t.IsBomb && (t.Y + 1 == cy || t.Y - 1 == cy || t.Y == cy))).ToList();
-                lista.Remove(LittleBoxesOnTheHilltop.Where(z => z.X == cx && z.Y == cy).First());
+                var lista = LittleBoxesOnTheHilltop.Where(t => t.IsBomb && (t.XId + 1 == cx || t.XId - 1 == cx || t.XId == cx))
+                   .Intersect(LittleBoxesOnTheHilltop.Where(t => t.IsBomb && (t.YId + 1 == cy || t.YId - 1 == cy || t.YId == cy))).ToList();
+                lista.Remove(LittleBoxesOnTheHilltop.Where(z => z.XId == cx && z.YId == cy).First());
 
                 return lista.Count(); ;
             };
-            this.LittleBoxesOnTheHilltop.ForEach(x => { x.bombsNeighbor = neighborBombs(x.X,x.Y); });        
+            this.LittleBoxesOnTheHilltop.ForEach(x => { x.bombsNeighbor = neighborBombs(x.XId,x.YId); });        
         }
        
 
         public bool IsBomb(int x,int y) {
-            return this.LittleBoxesOnTheHilltop.Where(z => z.X.Equals(x) && z.Y.Equals(y)).First().IsBomb;
+            return this.LittleBoxesOnTheHilltop.Where(z => z.XId.Equals(x) && z.YId.Equals(y)).First().IsBomb;
         }
 
         public bool IsButtonFlagged(int x, int y ) {
-            return this.LittleBoxesOnTheHilltop.Where(z => z.X == x && z.Y == y).First().IsFlagged();
+            return this.LittleBoxesOnTheHilltop.Where(z => z.XId == x && z.YId == y).First().IsFlagged();
         }
 
         public int neighborBombs(int cx,int cy ) {
-            return this.LittleBoxesOnTheHilltop.Where(x => x.X == cx && x.Y == cy).First().bombsNeighbor;
+            return this.LittleBoxesOnTheHilltop.Where(x => x.XId == cx && x.YId == cy).First().bombsNeighbor;
         }
     }
 }

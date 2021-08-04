@@ -51,15 +51,6 @@
             <input type="button" @onclick="@(() => SendAsync(newmsg))" value="Send" />
         </div>
 
-        <span>
-            Players connected in this room:
-
-            @foreach( Player s in this.PlayersConnected ) {
-                <span class="oi oi-person mr-2" aria-hidden="true">@s.idPlayer</span>
-            }
-
-        </span>
-
 
     </div>
 }
@@ -99,11 +90,10 @@
     private string newmsg;
 
     // list of messages in chat
-    private List<Message> msgs = new ();
-    private List<Player> PlayersConnected = new();
+    private List<Message> msgs = new();
     private string _hubUrl;
     private HubConnection chatHubConnection;
-    private HubConnection PlayersHubConnection;
+    //private HubConnection PlayersHubConnection;
 
 
 
@@ -130,18 +120,18 @@
                 .Build();
 
 
-            _hubUrl = baseUrl.TrimEnd('/') + PlayerHub.HubUrl;
-            PlayersHubConnection = new HubConnectionBuilder()
-                .WithUrl(_hubUrl)
-                .Build();
+            //_hubUrl = baseUrl.TrimEnd('/') + PlayerHub.HubUrl;
+            //PlayersHubConnection = new HubConnectionBuilder()
+            //    .WithUrl(_hubUrl)
+            //    .Build();
 
 
             chatHubConnection.On<string,string>("Broadcast",BroadcastMessage);
-            PlayersHubConnection.On<string>("BroadcastPlayers",BroadcastPlayers);
+            //PlayersHubConnection.On<string>("BroadcastPlayers",BroadcastPlayers);
 
 
             await chatHubConnection.StartAsync();
-            await PlayersHubConnection.StartAsync();
+            //await PlayersHubConnection.StartAsync();
 
 
             await SendAsync($"{username} joined room.");
@@ -166,19 +156,7 @@
         StateHasChanged();
     }
 
-    private void BroadcastPlayers(String username) {
-        PlayersConnected.Add(new Player(username));
-        StateHasChanged();
-    }
-    private void DeletePlayers( String username ) {
-        Player p = PlayersConnected.Where(x => x.idPlayer == username).First();
-        PlayersConnected.Remove(p);
-        StateHasChanged();
-    }
 
-    public void getAllPlayers() {
-        StateHasChanged();
-    }
 
 
     private async Task DisconnectAsync() {
@@ -192,12 +170,10 @@
             chatHubConnection = null;
 
 
-            Player p = this.PlayersConnected.Single(x => x.idPlayer == username);
-            this.PlayersConnected.Remove(p);
 
-            await PlayersHubConnection.StopAsync();
-            await PlayersHubConnection.DisposeAsync();
-            PlayersHubConnection = null;
+            //await PlayersHubConnection.StopAsync();
+            //await PlayersHubConnection.DisposeAsync();
+            //PlayersHubConnection = null;
 
 
             userConnected = false;
@@ -208,7 +184,7 @@
     private async Task SendAsync( string message ) {
         if( userConnected && !string.IsNullOrWhiteSpace(message) ) {
 
-            await PlayersHubConnection.SendAsync("BroadcastPlayers",username);
+            //await PlayersHubConnection.SendAsync("BroadcastPlayers",username);
             await chatHubConnection.SendAsync("Broadcast",username,message);
 
             newmsg = string.Empty;

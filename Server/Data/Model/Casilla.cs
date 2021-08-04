@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BlazorApp.Server.Data.Model.minesweeperPresentation {
-    public class Mine {
+namespace Server.Data.Model {
+    public class Casilla {
 
 
         public bool isZero;
@@ -20,7 +20,7 @@ namespace BlazorApp.Server.Data.Model.minesweeperPresentation {
         //ventana deslizante
         public string seleccionadaCuadrado { set; get; }
 
-        public Mine( int x,int y,bool bomb ) {
+        public Casilla( int x,int y,bool bomb ) {
             this.X = x;
             this.Y = y;
             //await Task.FromResult(

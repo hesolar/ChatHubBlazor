@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BlazorStrap;
 using Microsoft.AspNetCore.ResponseCompression;
+using Server.Data.Services;
 
 namespace Server {
     public class Startup {
@@ -32,6 +33,8 @@ namespace Server {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+            services.AddSingleton<PartidaService>();
+        
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,7 +60,7 @@ namespace Server {
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
                 endpoints.MapHub<ChatHub>(ChatHub.HubUrl);
-                endpoints.MapHub<PlayerHub>(PlayerHub.HubUrl);
+                //endpoints.MapHub<PlayerHub>(PlayerHub.HubUrl);
             });
         }
     }
