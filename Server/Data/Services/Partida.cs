@@ -12,7 +12,13 @@ namespace Server.Data.Services {
         public string id { get; set; }
         public List<String> msgs { get; set; }
 
-       public  List<List<Casilla>> casillas{get;set;}
+        public List<String> players { get; set; } = new();
+
+        public  List<List<Casilla>> casillas{get;set;}
+
+        public string this[int x] => players[x];
+
+        public int currentPlayerTourn { get; set; } = 0;
 
         public List<List<Casilla>> createMineList(MinesweeperLogic logica) {
             //referencia
@@ -32,6 +38,16 @@ namespace Server.Data.Services {
             this.id = id;
             this.msgs = new List<String>();
             this.casillas = createMineList(logica);
+            
+        }
+
+        public void AddPlayer(String newPLayer ) {
+            this.players.Add(newPLayer);
+        }
+
+        public void nextTourn() {
+            currentPlayerTourn++;
+            if( this.currentPlayerTourn >= players.Count ) currentPlayerTourn = 0;
         }
     }
 }

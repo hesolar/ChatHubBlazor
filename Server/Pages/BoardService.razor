@@ -1,61 +1,101 @@
-﻿@page "/boardService/{roomId}"
+﻿@page "/boardService"
 @inject PartidaService partida
 @using Server.Data.Services
 @using Server.Data.Model
 @using BlazorStrap
+
+@using Microsoft.Extensions.Primitives;
+@inject NavigationManager navigationManager
+@using Microsoft.AspNetCore.WebUtilities
+
+
+<div class="active">
+    Hello @username :you are playing on roomID: @roomId
+    <br />
+    players connected:
+
+    @foreach( String s in @TableroActual.players ) {
+        <li> @s  </li> <br />
+    }
+    Current Tourn playing:
+
+
+
+
+    @this.TableroActual[TableroActual.currentPlayerTourn]
+
+    <input @bind="this.currentTourn" type="text" disabled/>
+</div>
 <h3>BoardService</h3>
 
-<div class="card">
-    <BSContainer>
 
-        <h3>Board</h3>
+    <div class="card">
+        <BSContainer>
 
-        @foreach( var row in Squares2 ) {
-            <BSRow>
-                @foreach( Casilla mine in row ) {
+            <h3>Board</h3>
 
-                    <button disabled="@mine.isZero" style="width:30px"
-                            @oncontextmenu=" (e)=>
-            { //right click
-            if( !mine.pulsado ) {
-            bool b=  logica.Flag(mine.X,mine.Y);
-            mine.Flag();}
-            }"
-                            @onclick="( e ) => LeftClick(mine,e)"
-                            @onmousewheel="() =>MouseWheel(mine)"
-           >
-                        <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
-                    </button>
-                }
 
-            </BSRow>
-        }
-    </BSContainer>
-</div>
-    @*Indicadores
-        bombs Remaining:   @game.bombsRemaining <br />
-        bombs : @game.bombs <br />*@
+
+            @foreach( var row in Squares2 ) {
+                <BSRow>
+                    @foreach( Casilla mine in row ) {
+
+                        <button disabled="@(!CanPlay || mine.isZero)" style="width:30px"
+                                @oncontextmenu=" ( e ) => { //right click
+                                                     if( !mine.pulsado ) {
+                                                         bool b = logica.Flag(mine.X,mine.Y);
+                                                         mine.Flag(); }
+                                                 }"
+                                @onclick="( e ) => LeftClick(mine,e)"
+                                @onmousewheel="() => MouseWheel(mine)">
+                            <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
+                        </button>
+                    }
+
+                </BSRow>
+            }
+        </BSContainer>
+    </div>
+
+
+
+
+
+@*Indicadores
+    bombs Remaining:   @game.bombsRemaining <br />
+    bombs : @game.bombs <br />*@
     flags: @logica.FlagsRemaining
 
 
     @code {
+        public bool CanPlay;
         BlazorApp.Server.Data.Model.MinesweeperLogic.MinesweeperLogic logica;
         [Parameter]
         public String roomId { set; get; }
         public List<String> msgs;
         List<List<Casilla>> Squares2;
-
+        String username;
+        Partida TableroActual;
+        public int currentTourn;
 
         protected override void OnInitialized() {
+            ReadQueryString();
+
+
             Partida[] ps = partida.partidas;
 
-            Partida TableroActual = ps.Where(x => x.id == roomId).First();
+            TableroActual = ps.Where(x => x.id == roomId).First();
             logica = TableroActual.logica;
+            if( !TableroActual.players.Contains(username) ) TableroActual.AddPlayer(username);
+            currentTourn = TableroActual.currentPlayerTourn;
+            this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn] == username;
             this.Squares2 = TableroActual.casillas;
 
         }
 
-        public void LeftClick(Casilla mine,MouseEventArgs e ) {
+
+
+        public void LeftClick( Casilla mine,MouseEventArgs e ) {
             if( e.Button == 0 ) {
                 if( !mine.pulsado ) {
                     if( !logica.IsButtonFlagged(mine.X,mine.Y) ) {
@@ -74,6 +114,7 @@
                         }
                         //else Lost();
                     }
+                    ActualizarTurno();
                 }
                 else {
                     MouseWheel(mine);
@@ -110,7 +151,7 @@
                 });
 
             }
-            StateHasChanged();
+            ActualizarTurno();
         }
 
         public void RevealZeroSquaresRecursion( Casilla mine ) {
@@ -148,5 +189,30 @@
 
             }
         }
+
+        public void ReadQueryString() {
+            StringValues aux;
+            var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+            if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid",out aux) ) {
+                this.roomId = aux;
+            }
+            uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+            if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("username",out aux) ) {
+                this.username = aux;
+            }
+        }
+
+        public async void ActualizarTurno() {
+
+
+            this.TableroActual.nextTourn();
+            this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn] == username;
+            currentTourn = TableroActual.currentPlayerTourn;
+            //StateHasChanged();
+            await Task.Delay(3000);
+
+        }
+
+
 
     }
