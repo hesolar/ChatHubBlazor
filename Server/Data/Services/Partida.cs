@@ -12,11 +12,11 @@ namespace Server.Data.Services {
         public string id { get; set; }
         public List<String> msgs { get; set; }
 
-        public List<String> players { get; set; } = new();
+        public List<Jugador> players { get; set; } = new();
 
         public  List<List<Casilla>> casillas{get;set;}
 
-        public string this[int x] => players[x];
+        public Jugador this[int x] => players[x];
 
         public int currentPlayerTourn { get; set; } = 0;
 
@@ -42,7 +42,7 @@ namespace Server.Data.Services {
         }
 
         public void AddPlayer(String newPLayer ) {
-            this.players.Add(newPLayer);
+            this.players.Add(new Jugador(newPLayer));
         }
 
         public void nextTourn() {

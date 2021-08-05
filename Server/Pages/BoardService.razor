@@ -14,205 +14,256 @@
     <br />
     players connected:
 
-    @foreach( String s in @TableroActual.players ) {
-        <li> @s  </li> <br />
+    @foreach (Jugador p in @TableroActual.players)
+    {
+        <li> @p.name  </li> <br />
     }
     Current Tourn playing:
+    
 
-
-
-
-    @this.TableroActual[TableroActual.currentPlayerTourn]
-
-    <input @bind="this.currentTourn" type="text" disabled/>
+    <input value="@this.TableroActual[TableroActual.currentPlayerTourn]" type="text" disabled />
 </div>
 <h3>BoardService</h3>
 
 
-    <div class="card">
-        <BSContainer>
+<div class="card">
+    <BSContainer>
 
-            <h3>Board</h3>
-
-
-
-            @foreach( var row in Squares2 ) {
-                <BSRow>
-                    @foreach( Casilla mine in row ) {
-
-                        <button disabled="@(!CanPlay || mine.isZero)" style="width:30px"
-                                @oncontextmenu=" ( e ) => { //right click
-                                                     if( !mine.pulsado ) {
-                                                         bool b = logica.Flag(mine.X,mine.Y);
-                                                         mine.Flag(); }
-                                                 }"
-                                @onclick="( e ) => LeftClick(mine,e)"
-                                @onmousewheel="() => MouseWheel(mine)">
-                            <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
-                        </button>
-                    }
-
-                </BSRow>
-            }
-        </BSContainer>
-    </div>
+        <h3>Board</h3>
 
 
 
+        @foreach (var row in Squares2)
+        {
+            <BSRow>
+                @foreach (Casilla mine in row)
+                {
 
-
-@*Indicadores
-    bombs Remaining:   @game.bombsRemaining <br />
-    bombs : @game.bombs <br />*@
-    flags: @logica.FlagsRemaining
-
-
-    @code {
-        public bool CanPlay;
-        BlazorApp.Server.Data.Model.MinesweeperLogic.MinesweeperLogic logica;
-        [Parameter]
-        public String roomId { set; get; }
-        public List<String> msgs;
-        List<List<Casilla>> Squares2;
-        String username;
-        Partida TableroActual;
-        public int currentTourn;
-
-        protected override void OnInitialized() {
-            ReadQueryString();
-
-
-            Partida[] ps = partida.partidas;
-
-            TableroActual = ps.Where(x => x.id == roomId).First();
-            logica = TableroActual.logica;
-            if( !TableroActual.players.Contains(username) ) TableroActual.AddPlayer(username);
-            currentTourn = TableroActual.currentPlayerTourn;
-            this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn] == username;
-            this.Squares2 = TableroActual.casillas;
-
-        }
-
-
-
-        public void LeftClick( Casilla mine,MouseEventArgs e ) {
-            if( e.Button == 0 ) {
-                if( !mine.pulsado ) {
-                    if( !logica.IsButtonFlagged(mine.X,mine.Y) ) {
-                        bool alive = logica.MakeMove(mine.X,mine.Y);
-
-                        int bombs = logica.neighborBombs(mine.X,mine.Y);
-
-
-                        if( alive ) {
-                            int bombsNeighb = logica.neighborBombs(mine.X,mine.Y);
-                            mine.MakeMove(bombsNeighb);
-
-                            if( logica.neighborBombs(mine.X,mine.Y).Equals(0) ) {
-                                RevealZeroSquaresRecursion(mine);
-                            }
-                        }
-                        //else Lost();
-                    }
-                    ActualizarTurno();
+                    <button disabled="@(!CanPlay || mine.isZero)" style="width:30px"
+                            @oncontextmenu=" (e) => { //right click
+                                                 if (!mine.pulsado) {
+                                                     bool b = logica.Flag(mine.X, mine.Y);
+                                                     mine.Flag(); }
+                                             }"
+                            @onclick="(e) => LeftClick(mine, e)"
+                            @onmousewheel="() => MouseWheel(mine)">
+                        <BSBadge Color="@mine.ColorEstado">  @mine.text  </BSBadge>
+                    </button>
                 }
-                else {
-                    MouseWheel(mine);
-                }
-            }
-            StateHasChanged();
+
+            </BSRow>
         }
-
-        public void MouseWheel( Casilla mine ) {
-            if( !mine.pulsado ) return;
-            Func<Casilla,List<Casilla>> CasillasAdyacentes = (m => {
-                List<Casilla> vecinos = Squares2.SelectMany(z => z.Where(t => t.X + 1 == m.X || t.X - 1 == m.X || t.X == m.X)).Intersect(
-              Squares2.SelectMany(z => z.Where(t => t.Y + 1 == m.Y || t.Y - 1 == m.Y || t.Y == m.Y))).ToList();
-                vecinos.Remove(Squares2.SelectMany(z => z.Where(t => t.X == m.X && t.Y == m.Y)).First());
-                return vecinos;
-            });
-
-            List<Casilla> flag = CasillasAdyacentes(mine).Where(x => x.flag).ToList();
-            List<Casilla> notFlagAndNotOpen = CasillasAdyacentes(mine).Where(x => !x.pulsado && !x.flag).ToList();
-            int bombsNeighbor = logica.neighborBombs(mine.X,mine.Y);
-            if( flag.Count.Equals(bombsNeighbor) ) {
-                notFlagAndNotOpen.ForEach(x => {
+    </BSContainer>
+</div>
 
 
-                    bombsNeighbor = logica.neighborBombs(x.X,x.Y);
-                    if( bombsNeighbor == 0 ) {
-                        x.MakeMove(0);
-                        RevealZeroSquaresRecursion(x);
-                    }
-                    else {
-                        if( logica.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
-                        //else Lost();
-                    }
-                });
+@if (logica.Victory())
+{
+    this.Squares2.ForEach(x => x.ForEach(y => y.pulsado = true));
+    <label> YOU WIN </label>
+} else
+{
+    <label>Flags Remaining:</label>
+     @logica.FlagsRemaining
 
+
+}
+
+<div class="align-content-md-around">
+
+    @{
+        List<Jugador> x = this.TableroActual.players.OrderBy(x => x.puntuacion).ToList();
+        
+        <table>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Puntos</th>
+                </tr>
+            @foreach(Jugador p in x){
+           
+        <tr>
+            <td> @p.name</td>
+            <td>@p.puntuacion</td>
+        </tr>
             }
-            ActualizarTurno();
-        }
-
-        public void RevealZeroSquaresRecursion( Casilla mine ) {
 
 
-            Func<Casilla,List<Casilla>> CasillasAdyacentes = (m => {
-                List<Casilla> vecinos = Squares2.SelectMany(z => z.Where(t => t.X + 1 == m.X || t.X - 1 == m.X || t.X == m.X)).Intersect(
-              Squares2.SelectMany(z => z.Where(t => t.Y + 1 == m.Y || t.Y - 1 == m.Y || t.Y == m.Y))).ToList();
-                vecinos.Remove(Squares2.SelectMany(z => z.Where(t => t.X == m.X && t.Y == m.Y)).First());
-                return vecinos;
-            });
+        </table>}
+</div>
 
 
 
-            List<Casilla> minesNeighbors = CasillasAdyacentes(mine);
 
-            //las no zero las despliego
-            var notZeroMines = minesNeighbors.Where(x => !x.flag && logica.neighborBombs(x.X,x.Y) != 0).ToList();
-            notZeroMines.ForEach(z => z.MakeMove(logica.neighborBombs(z.X,z.Y)));
 
-            //las casillas con 0
-            var ZeroMines = minesNeighbors.Where(z => !z.flag && logica.neighborBombs(z.X,z.Y).Equals(0)).ToList();
-
-            foreach( Casilla m in ZeroMines ) {
-
-                m.MakeMove(0);
-                List<Casilla> a = CasillasAdyacentes(m);
-                a.AsParallel().ToList().Where(x => !x.flag && logica.neighborBombs(x.X,x.Y) != 0).ToList().ForEach(x => x.MakeMove(logica.neighborBombs(x.X,x.Y)));
-
-                List<Casilla> b = a.Where(x => !x.flag && logica.neighborBombs(x.X,x.Y) == 0 && !x.pulsado).ToList();
-                b.AsParallel().ToList().ForEach(x => x.MakeMove(0));
-                b.AsParallel().ToList().ForEach(x => RevealZeroSquaresRecursion(x));
+@code {
+    public bool CanPlay;
+    BlazorApp.Server.Data.Model.MinesweeperLogic.MinesweeperLogic logica;
+    [Parameter]
+    public String roomId { set; get; }
+    public List<String> msgs;
+    List<List<Casilla>> Squares2;
+    String username;
+    Partida TableroActual;
+    public int currentTourn;
 
 
 
-            }
-        }
-
-        public void ReadQueryString() {
-            StringValues aux;
-            var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-            if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid",out aux) ) {
-                this.roomId = aux;
-            }
-            uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-            if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("username",out aux) ) {
-                this.username = aux;
-            }
-        }
-
-        public async void ActualizarTurno() {
+    protected override void OnInitialized()
+    {
+        ReadQueryString();
 
 
-            this.TableroActual.nextTourn();
-            this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn] == username;
-            currentTourn = TableroActual.currentPlayerTourn;
-            //StateHasChanged();
-            await Task.Delay(3000);
+        Partida[] ps = partida.partidas;
 
-        }
+        TableroActual = ps.Where(x => x.id == roomId).First();
+        logica = TableroActual.logica;
 
-
+        if (!TableroActual.players.Exists(x => x.name == username)) TableroActual.AddPlayer(username);
+        currentTourn = TableroActual.currentPlayerTourn;
+        this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn].name == username;
+        this.Squares2 = TableroActual.casillas;
 
     }
+
+
+
+    public void LeftClick(Casilla mine, MouseEventArgs e)
+    {
+        if (e.Button == 0)
+        {
+            if (!mine.pulsado)
+            {
+                if (!logica.IsButtonFlagged(mine.X, mine.Y))
+                {
+                    bool alive = logica.MakeMove(mine.X, mine.Y);
+
+                    int bombs = logica.neighborBombs(mine.X, mine.Y);
+
+
+                    if (alive)
+                    {
+                        int bombsNeighb = logica.neighborBombs(mine.X, mine.Y);
+                        mine.MakeMove(bombsNeighb);
+
+                        if (logica.neighborBombs(mine.X, mine.Y).Equals(0))
+                        {
+                            RevealZeroSquaresRecursion(mine);
+                        }
+                    }
+                    //else Lost();
+                }
+                ActualizarTurno();
+            }
+            else
+            {
+                MouseWheel(mine);
+            }
+        }
+        StateHasChanged();
+    }
+
+    public void MouseWheel(Casilla mine)
+    {
+        if (!mine.pulsado) return;
+        Func<Casilla, List<Casilla>> CasillasAdyacentes = (m =>
+        {
+            List<Casilla> vecinos = Squares2.SelectMany(z => z.Where(t => t.X + 1 == m.X || t.X - 1 == m.X || t.X == m.X)).Intersect(
+          Squares2.SelectMany(z => z.Where(t => t.Y + 1 == m.Y || t.Y - 1 == m.Y || t.Y == m.Y))).ToList();
+            vecinos.Remove(Squares2.SelectMany(z => z.Where(t => t.X == m.X && t.Y == m.Y)).First());
+            return vecinos;
+        });
+
+        List<Casilla> flag = CasillasAdyacentes(mine).Where(x => x.flag).ToList();
+        List<Casilla> notFlagAndNotOpen = CasillasAdyacentes(mine).Where(x => !x.pulsado && !x.flag).ToList();
+        int bombsNeighbor = logica.neighborBombs(mine.X, mine.Y);
+        if (flag.Count.Equals(bombsNeighbor))
+        {
+            notFlagAndNotOpen.ForEach(x =>
+            {
+
+
+                bombsNeighbor = logica.neighborBombs(x.X, x.Y);
+                if (bombsNeighbor == 0)
+                {
+                    x.MakeMove(0);
+                    RevealZeroSquaresRecursion(x);
+                }
+                else
+                {
+                    if (logica.MakeMove(x.X, x.Y)) x.MakeMove(bombsNeighbor);
+                    //else Lost();
+                }
+            });
+
+        }
+        ActualizarTurno();
+    }
+
+    public void RevealZeroSquaresRecursion(Casilla mine){
+
+
+        Func<Casilla, List<Casilla>> CasillasAdyacentes = (m =>
+        {
+            List<Casilla> vecinos = Squares2.SelectMany(z => z.Where(t => t.X + 1 == m.X || t.X - 1 == m.X || t.X == m.X)).Intersect(
+          Squares2.SelectMany(z => z.Where(t => t.Y + 1 == m.Y || t.Y - 1 == m.Y || t.Y == m.Y))).ToList();
+            vecinos.Remove(Squares2.SelectMany(z => z.Where(t => t.X == m.X && t.Y == m.Y)).First());
+            return vecinos;
+        });
+
+
+
+        List<Casilla> minesNeighbors = CasillasAdyacentes(mine);
+
+        //las no zero las despliego
+        var notZeroMines = minesNeighbors.Where(x => !x.flag && logica.neighborBombs(x.X, x.Y) != 0).ToList();
+        notZeroMines.ForEach(z => z.MakeMove(logica.neighborBombs(z.X, z.Y)));
+
+        //las casillas con 0
+        var ZeroMines = minesNeighbors.Where(z => !z.flag && logica.neighborBombs(z.X, z.Y).Equals(0)).ToList();
+
+        foreach (Casilla m in ZeroMines)
+        {
+
+            m.MakeMove(0);
+            List<Casilla> a = CasillasAdyacentes(m);
+            a.AsParallel().ToList().Where(x => !x.flag && logica.neighborBombs(x.X, x.Y) != 0).ToList().ForEach(x => x.MakeMove(logica.neighborBombs(x.X, x.Y)));
+
+            List<Casilla> b = a.Where(x => !x.flag && logica.neighborBombs(x.X, x.Y) == 0 && !x.pulsado).ToList();
+            b.AsParallel().ToList().ForEach(x => x.MakeMove(0));
+            b.AsParallel().ToList().ForEach(x => RevealZeroSquaresRecursion(x));
+
+
+
+        }
+    }
+
+    public void ReadQueryString()
+    {
+        StringValues aux;
+        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid", out aux))
+        {
+            this.roomId = aux;
+        }
+        uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("username", out aux))
+        {
+            this.username = aux;
+        }
+    }
+
+    public async void ActualizarTurno()
+    {
+
+        this.TableroActual[TableroActual.currentPlayerTourn].puntuacion++;
+        this.TableroActual.nextTourn();
+        this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn].name == username;
+        currentTourn = TableroActual.currentPlayerTourn;
+        //StateHasChanged();
+        await Task.Delay(3000);
+
+    }
+
+
+
+}
