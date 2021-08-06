@@ -8,7 +8,7 @@ using Server.Data.Model.MinesweeperPresentation;
 
 namespace Server.Data.Services {
     public class Partida {
-
+        public bool PartidaComenzada = false;
         public MinesweeperLogica logica { get; set; }
         public string id { get; set; }
         public List<String> msgs { get; set; }
@@ -41,11 +41,21 @@ namespace Server.Data.Services {
             this.id = id;
             this.msgs = new List<String>();
             this.casillas = createMineList(logica);
+
             
         }
 
-        public void AddPlayer(String newPLayer ) {
-            this.players.Add(new Jugador(newPLayer));
+        public bool AddPlayer(String newPLayer ) {
+
+            if( !players.Any(x=>x.username==newPLayer)) {
+
+                if( !this.PartidaComenzada ) {
+                    this.players.Add(new Jugador(newPLayer));
+                    return true;
+                }
+            }
+            return false;
+           
         }
 
         public void nextTourn() {

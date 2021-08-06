@@ -41,19 +41,14 @@
         this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
         <label> YOU WIN </label>
     }
-    else {
-        <label>Flags Remaining:</label>
-        @logica.FlagsRemaining
-
-
-    }
+    else { <label>Flags Remaining:@logica.FlagsRemaining</label>}
+   <button disabled="@(TableroActual.PartidaComenzada||!botonStartActivo )" @onclick="StartGame">Star</button>
 
 
 </div>
 
 
 
-<button hidden="@(!botonStartActivo)" @onclick="StartGame">Star</button>
 
 <ScoreBoard_Component jugadores="this.TableroActual.players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
 <Cronometro_Component dificultad="this.dificultad" rows="logica.rows" timeToMove="10" valorCronometro="valorCronometro"></Cronometro_Component>
@@ -85,13 +80,16 @@
 
         TableroActual = ps.Where(x => x.id == roomId).First();
         logica = TableroActual.logica;
-
-        if( !TableroActual.players.Exists(x => x.username == username) ) TableroActual.AddPlayer(username);
-        currentTourn = TableroActual.currentPlayerTourn;
-        this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn].username == username;
         this.Casillas = TableroActual.casillas;
 
 
+        bool b=TableroActual.AddPlayer(username);
+
+        if( b ) {
+            currentTourn = TableroActual.currentPlayerTourn;
+            this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn].username == username;
+
+        }
 
 
 
@@ -255,7 +253,7 @@
         await Task.Delay(2000);
 
         Presentacion.ActualizarSeleccion(Casillas);
-
+        TableroActual.PartidaComenzada = true;
         await TimeLapse();
 
     }
