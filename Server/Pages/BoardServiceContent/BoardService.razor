@@ -3,12 +3,11 @@
 @using Server.Data.Services
 @using Server.Data.Model
 @using BlazorStrap
-
 @using Microsoft.Extensions.Primitives;
 @inject NavigationManager navigationManager
 @using Microsoft.AspNetCore.WebUtilities
 
-
+<h3>BoardService</h3>
 <div class="active">
     Hello @username :you are playing on roomID: @roomId
     <br />
@@ -23,8 +22,8 @@
 
     <input value="@this.TableroActual[TableroActual.currentPlayerTourn]" type="text" disabled />
 </div>
-<h3>BoardService</h3>
 
+<ScoreBoard_BoardService></ScoreBoard_BoardService>
 
 <div class="card">
     <BSContainer>
@@ -69,27 +68,7 @@
 
 }
 
-<div class="align-content-md-around">
 
-    @{
-        List<Jugador> x = this.TableroActual.players.OrderBy(x => x.puntuacion).ToList();
-        
-        <table>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Puntos</th>
-                </tr>
-            @foreach(Jugador p in x){
-           
-        <tr>
-            <td> @p.name</td>
-            <td>@p.puntuacion</td>
-        </tr>
-            }
-
-
-        </table>}
-</div>
 
 
 

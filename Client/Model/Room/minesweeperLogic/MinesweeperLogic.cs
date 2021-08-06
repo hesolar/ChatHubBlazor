@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlazorApp.Client.Model.Room.minesweeperPresentation;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace BlazorApp.Client.Model.minesweeper {
                     //cambiar ancho?
                     bool b = bool.Parse(probabilityOfBomb[s_Generator.Next(0,6)]);
                     if(b)  bombs += 1; 
-                    LittleBoxesOnTheHilltop.Add(new GameBoxButton(row,col,b));;
+                    
                    
                 }
             }
@@ -34,7 +35,7 @@ namespace BlazorApp.Client.Model.minesweeper {
 
             BombsRemaining = bombs;
             FlagsRemaining = bombs;
-
+          
 
         }
         public bool Victory() {

@@ -1,0 +1,28 @@
+﻿<h3>ScoreBoard</h3>
+
+<div class="align-content-md-around">
+    
+    @{
+    @*List<Jugador>* x = this.TableroActual.players.OrderBy(x => x.puntuacion).ToList();*@
+
+        <table style="border:double" title="Scoreboard">
+
+            <tr>
+                <th>Username</th>
+                <th>Score</th>
+            </tr>
+            @foreach(Jugador p in x){
+
+            <tr>
+                <td> @p.name</td>
+                <td>@p.puntuacion</td>
+            </tr>
+            }
+
+
+        </table>}
+</div>
+
+@code{
+[Parameter] List<Jugador> 
+}
