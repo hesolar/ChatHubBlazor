@@ -1,14 +1,15 @@
-﻿using BlazorApp.Server.Data.Model.MinesweeperLogic;
+﻿using Server.Data.Model.MinesweeperLogic;
 using Server.Data.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Server.Data.Model.MinesweeperPresentation;
 
 namespace Server.Data.Services {
     public class Partida {
 
-        public MinesweeperLogic logica { get; set; }
+        public MinesweeperLogica logica { get; set; }
         public string id { get; set; }
         public List<String> msgs { get; set; }
 
@@ -17,15 +18,17 @@ namespace Server.Data.Services {
         public  List<List<Casilla>> casillas{get;set;}
 
         public Jugador this[int x] => players[x];
-
+        public Jugador this[String username] => this.players.Where(x=>x.username==username).First();
         public int currentPlayerTourn { get; set; } = 0;
+        public int dificultad { get; set; } = 0;
 
-        public List<List<Casilla>> createMineList(MinesweeperLogic logica) {
+        public List<List<Casilla>> createMineList(MinesweeperLogica logica) {
             //referencia
+            int rows = logica.rows;
             var result = new List<List<Casilla>>();
-            for( var x = 0; x < logica.rows; x++ ) {
+            for( var x = 0; x < rows; x++ ) {
                 var row = new List<Casilla>();
-                for( var y = 0; y < logica.rows; y++ ) {
+                for( var y = 0; y < rows; y++ ) {
                     row.Add(new Casilla(x,y,logica.IsBomb(x,y)));
                 }
                 result.Add(row);
@@ -33,7 +36,7 @@ namespace Server.Data.Services {
             return result;
         }
 
-        public Partida( MinesweeperLogic logica,string id ) {
+        public Partida( MinesweeperLogica logica,string id ) {
             this.logica = logica;
             this.id = id;
             this.msgs = new List<String>();

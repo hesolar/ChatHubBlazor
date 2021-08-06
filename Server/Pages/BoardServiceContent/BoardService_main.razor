@@ -1,0 +1,306 @@
+﻿@page "/boardService"
+@inject PartidaService partida
+@using Server.Data.Services
+@using Server.Data.Model
+@using Server.Data.Model.MinesweeperLogic
+@using Server.Data.Model.MinesweeperPresentation
+@using BlazorStrap
+@using Microsoft.Extensions.Primitives;
+@inject NavigationManager navigationManager
+@using Microsoft.AspNetCore.WebUtilities
+
+<Progress_Component acierto="aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="logica"></Progress_Component>
+<InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual[TableroActual.currentPlayerTourn].username" jugadores="@TableroActual.players"></InfoPlayer_Component>
+
+
+@for( int i = 0; i < 10; i++ ) {
+    <br>
+}
+
+<div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
+    <BSContainer>
+
+        <h3>Board Component</h3>
+
+        @foreach( var row in Casillas ) {
+            <BSRow>
+
+                @foreach( Casilla casilla in row ) {
+                    <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)||!CanPlay || casilla.isZero )" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                            @oncontextmenu=" () => RightClick(casilla)"
+                            @onclick="( e ) => LeftClick(e,casilla)"
+                            @onmousewheel="( e ) => LeftClick(e,casilla)">
+                        <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
+                    </button>
+                }
+            </BSRow>
+        }
+    </BSContainer>
+
+    @if( logica.Victory() ) {
+        this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
+        <label> YOU WIN </label>
+    }
+    else {
+        <label>Flags Remaining:</label>
+        @logica.FlagsRemaining
+
+
+    }
+
+
+</div>
+
+
+
+<button hidden="@(!botonStartActivo)" @onclick="StartGame">Star</button>
+
+<ScoreBoard_Component jugadores="this.TableroActual.players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
+<Cronometro_Component dificultad="this.dificultad" rows="logica.rows" timeToMove="10" valorCronometro="valorCronometro"></Cronometro_Component>
+<InfoMatch_Component></InfoMatch_Component>
+
+
+
+
+@code {
+
+    public bool CanPlay;
+    MinesweeperLogica logica;
+    [Parameter] public String roomId { set; get; }
+    public List<String> msgs;
+    List<List<Casilla>> Casillas;
+    String username;
+    Partida TableroActual;
+    public int currentTourn;
+    public bool aciertoPuntuacion = true;
+
+
+
+
+    protected override void OnInitialized() {
+        ReadQueryString();
+
+
+        Partida[] ps = partida.partidas;
+
+        TableroActual = ps.Where(x => x.id == roomId).First();
+        logica = TableroActual.logica;
+
+        if( !TableroActual.players.Exists(x => x.username == username) ) TableroActual.AddPlayer(username);
+        currentTourn = TableroActual.currentPlayerTourn;
+        this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn].username == username;
+        this.Casillas = TableroActual.casillas;
+
+
+
+
+
+    }
+
+    public void ReadQueryString() {
+        StringValues aux;
+        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid",out aux) ) {
+            this.roomId = aux;
+        }
+        uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("username",out aux) ) {
+            this.username = aux;
+        }
+    }
+
+
+    //Aciones mouse
+    public async Task LeftClick( MouseEventArgs e,Casilla casilla ) {
+        //left click
+        if( e.Detail == 1 ) {
+            if( !casilla.pulsado ) {
+                if( !logica.IsButtonFlagged(casilla.X,casilla.Y) ) {
+
+                    if( !casilla.bomb ) {
+                        logica.MakeMove(casilla.X,casilla.Y);
+
+
+
+
+                        int bombs = logica.neighborBombs(casilla.X,casilla.Y);
+
+                        casilla.MakeMove(bombs);
+
+                        if( bombs == 0 ) {
+                            this.dificultad += Presentacion.RevealZeroSquaresRecursion(Casillas,casilla,logica);
+                        }
+
+                        ActualizarPuntuacion((long) (valorCronometro.TotalSeconds));
+
+                    }
+                    else ActualizarPuntuacion(5);
+                    await ActualizarTurno();
+
+                    return;
+                }
+
+
+            }
+            else MouseWheel(casilla);
+
+        }
+
+
+
+    }
+
+    public void RightClick( Casilla casilla ) {
+        //right click
+        if( casilla.isSelected() ) {
+            if( !casilla.pulsado && !casilla.isZero ) {
+
+                if( casilla.bomb && !casilla.flag ) {
+                    logica.Flag(casilla.X,casilla.Y);
+                    casilla.Flag();
+                    casilla.Block();
+                    ActualizarPuntuacion((long) (2 * this.valorCronometro.TotalSeconds));
+                }
+                else ActualizarPuntuacion(-5);
+                if( !this.logica.Victory() ) Presentacion.ActualizarSeleccion(Casillas);
+                ActualizarTurno();
+            }
+        }
+    }
+
+    public async Task MouseWheel( Casilla mine ) {
+        if( !mine.pulsado ) return;
+
+
+        List<Casilla> flag = Presentacion.CasillasAdyacentes(Casillas,mine).Where(x => x.flag).ToList();
+        List<Casilla> notFlagAndNotOpen = Presentacion.CasillasAdyacentes(Casillas,mine).Where(x => !x.pulsado && !x.flag).ToList();
+        int bombsNeighbor = logica.neighborBombs(mine.X,mine.Y);
+        if( flag.Count.Equals(bombsNeighbor) ) {
+            notFlagAndNotOpen.ForEach(x => {
+
+
+                bombsNeighbor = logica.neighborBombs(x.X,x.Y);
+                if( bombsNeighbor == 0 ) {
+                    x.MakeMove(0);
+                    this.dificultad += Presentacion.RevealZeroSquaresRecursion(Casillas,x,logica);
+                }
+                else {
+                    if( logica.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
+                }
+            });
+            mine.Block();
+            if( !Presentacion.MovesLeftOnSelectedArea(Casillas) ) {
+                Presentacion.ActualizarSeleccion(Casillas);
+            }
+            ActualizarPuntuacion((long) (this.valorCronometro.TotalSeconds));
+            await ActualizarTurno();
+        }
+    }
+
+
+
+    public async Task ActualizarTurno() {
+        valorCronometro = new TimeSpan(0,0,10);
+
+        this.TableroActual.dificultad++;
+
+
+        this.cronometroFuncionando = !cronometroFuncionando;
+
+
+
+
+        //cambiar
+
+        this.TableroActual.nextTourn();
+        this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn].username == username;
+        currentTourn = TableroActual.currentPlayerTourn;
+        //StateHasChanged();
+        StopCronometro();
+
+        await RefreshPage();
+        await Task.Delay(3000);
+    }
+
+    public async Task RefreshPage() {
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    public void ActualizarPuntuacion( long puntos = 1 ) {
+
+        aciertoPuntuacion = puntos>0 ;
+
+        TableroActual[TableroActual.currentPlayerTourn].puntuacion +=puntos;
+    }
+
+
+
+    //Crono
+    int dificultad = 0;
+    double timeToMove = 10;
+    TimeSpan valorCronometro= new TimeSpan(0,0,10);
+    bool cronometroFuncionando = false;
+    bool botonStartActivo = true;
+
+
+    async Task StartGame() {
+        await RefreshPage();
+        valorCronometro = new TimeSpan(0,0,10);
+        botonStartActivo = false;
+        cronometroFuncionando = true;
+
+        Presentacion.UnlockBoard(Casillas);
+
+        await Task.Delay(2000);
+
+        Presentacion.ActualizarSeleccion(Casillas);
+
+        await TimeLapse();
+
+    }
+
+
+
+
+
+
+    public async Task TimeLapse() {
+        RefreshPage();
+        Console.WriteLine("entrada");
+        await Task.Delay(200);
+        while( cronometroFuncionando && !logica.Victory() ) {
+            await Task.Delay(1);
+            if( cronometroFuncionando && valorCronometro.TotalSeconds > 0 ) {
+                await Task.Delay(500);
+                valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
+
+                await RefreshPage();
+            }
+            else {
+                //valorCronometro = new TimeSpan(0,0,(int) (Math.Round(timeToMove)));
+                //cronometroFuncionando = true;
+                ActualizarPuntuacion(-5);
+                Presentacion.EstadoOriginalTablero(Casillas);
+                valorCronometro = new TimeSpan(0,0,10);
+                StateHasChanged();
+                await ActualizarTurno();
+
+
+            }
+
+        }
+        cronometroFuncionando = true;
+        Console.WriteLine("hello");
+
+
+    }
+    public void StopCronometro() {
+        this.cronometroFuncionando = false;
+    }
+
+
+
+
+
+}

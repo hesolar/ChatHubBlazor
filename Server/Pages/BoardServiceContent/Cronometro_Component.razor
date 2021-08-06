@@ -1,0 +1,29 @@
+﻿
+
+<div class="align-content-lg-center" style="border:dashed; width:fit-content">
+    <h3> Movidas del cronometro Component</h3>
+    <input type="text" disabled @bind="@valorCronometro" style="background-color:@getColor()" />
+
+
+    Tiempo Turno:@{
+        double difficulty = (double) (rows * rows - dificultad) / (double) (rows * rows);
+
+
+        <label>@( ((timeToMove * difficulty)).ToString("0.000"))</label>
+    }
+</div>
+
+@code{
+    [Parameter] public int rows { get; set; }
+    [Parameter] public double timeToMove { get; set; }
+    [Parameter] public int dificultad { get; set; }
+    [Parameter] public TimeSpan valorCronometro { get; set; }
+    public string getColor() {
+
+        var tiempo = valorCronometro.TotalSeconds;
+        if( tiempo > 7 ) return "green";
+        if( tiempo > 4 ) return "orange";
+
+        else return "red";
+    }
+}

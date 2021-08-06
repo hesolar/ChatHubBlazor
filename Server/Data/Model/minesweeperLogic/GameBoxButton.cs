@@ -1,34 +1,24 @@
 ﻿using System;
 
 
-namespace BlazorApp.Server.Data.Model.MinesweeperLogic {
-   
+namespace Server.Data.Model.MinesweeperLogic {
+    enum ButtonCurrentState {
+        Initial,
+        Flag,
+        Open,
+        Exploded
+    }
     public class GameBoxButton {
-
-        enum ButtonCurrentState {
-            Initial,
-            Flag,
-            Open,
-            Exploded
-        }
-        public GameBoxButton() {
-            this.XId = -1;
-            this.YId = -1;
-            this.State = ButtonCurrentState.Initial;
-            bombsNeighbor = 0;
-            IsBomb = false;
-        }
-
-        public int XId { get; }
-        public int YId { get; }
+        public int X { get; }
+        public int Y { get; }
         private ButtonCurrentState State { get; set; }
         public bool IsBomb { get; }
         public int bombsNeighbor { get; set;
         }
 
         public GameBoxButton( int x, int y, Boolean isBomb) {
-            this.XId = x;
-            this.YId = y;
+            this.X = x;
+            this.Y = y;
             this.IsBomb = isBomb;
             this.State = ButtonCurrentState.Initial;
             

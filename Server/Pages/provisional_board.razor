@@ -1,7 +1,7 @@
 ﻿@*contiene toda la logica del buscaminas standar funcionando decentemente*@
 @using BlazorStrap
 @using Data.Model
-@using BlazorApp.Server.Data.Model.MinesweeperLogic
+@using Server.Data.Model.MinesweeperLogic
 
 <h3>This is the room manager id: @roomId, still working on it:</h3>
 
@@ -84,7 +84,7 @@
 
 
     int rows = 20;
-    public MinesweeperLogic game = new MinesweeperLogic(20);
+    public MinesweeperLogica game = new MinesweeperLogica(20);
 
     //public MinesweeperLogic game = new MinesweeperLogic(20);
 

@@ -1,0 +1,25 @@
+﻿@using Data.Model
+
+<div class="card" style="border: dotted; width: fit-content ;float:left ">
+    <h3>InfoPlayer Component</h3>
+    Hello @username , you are playing on roomID: @roomId
+    <br />
+    players connected:
+
+    @foreach( Jugador p in @jugadores ) {
+        <li> @p.username  </li> <br />
+    }
+    Current Tourn playing:
+
+
+    <input value="@currentPlayerPlaying" type="text" disabled />
+</div>
+
+
+
+@code {
+    [Parameter] public List<Jugador> jugadores { get; set; }
+    [Parameter] public String roomId { get; set; }
+    [Parameter] public String currentPlayerPlaying { get; set; }
+    [Parameter] public String username { get; set; }
+}

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Server.Data.Model {
+namespace Server.Data.Model.MinesweeperPresentation {
     public class Casilla {
 
 
@@ -16,6 +16,10 @@ namespace Server.Data.Model {
         public Color ColorEstado { get; set; }
         public bool bomb;
         public bool flag = false;
+
+        public static string original = "white";
+        public static string seleccionado = "grey";
+
 
         //ventana deslizante
         public string seleccionadaCuadrado { set; get; }
@@ -29,9 +33,9 @@ namespace Server.Data.Model {
             this.pulsado = false;
             this.bomb = bomb;
             this.text = "";
-            this.isZero = false;
+            this.isZero = true;
 
-            this.seleccionadaCuadrado = "purple";
+            this.seleccionadaCuadrado = original;
         }
         public void MakeMove( int bombsNeighbor ) {
 
@@ -47,6 +51,22 @@ namespace Server.Data.Model {
             ColorEstado = this.flag ? Color.Primary : Color.None;
 
 
+        }
+
+        public void EstadoOriginal() {
+            this.seleccionadaCuadrado = original;
+        }
+
+        public void Seleccionar() {
+            this.seleccionadaCuadrado = seleccionado;
+        }
+
+        public void Block() {
+            this.isZero = true;
+        }
+
+        public bool isSelected() {
+            return this.seleccionadaCuadrado == seleccionado;
         }
     }
 }

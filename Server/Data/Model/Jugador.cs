@@ -9,10 +9,10 @@ namespace Server.Data.Model
     {
         public Jugador(String name)
         {
-            this.name = name;
+            this.username = name;
             puntuacion = 0;
         }
-        public string name;
+        public string username;
         public long puntuacion { get; set; }
 
         public void ChangePuntuacion(long puntos)
@@ -21,7 +21,7 @@ namespace Server.Data.Model
         }
         public override string ToString()
         {
-            return this.name;
+            return this.username;
         }
     }
 }
