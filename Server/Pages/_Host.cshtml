@@ -15,6 +15,13 @@
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="Server.styles.css" rel="stylesheet" />
+    <environment include="Development">
+        <link href="_content/Syncfusion.Blazor/styles/fabric.css" rel="stylesheet" />
+        <script src="https://github.com/Daddoon/Blazor.Polyfill/releases/download/3.0.1/blazor.polyfill.min.js"></script>
+    </environment>
+
+
+
 </head>
 <body>
     <component type="typeof(App)" render-mode="ServerPrerendered" />

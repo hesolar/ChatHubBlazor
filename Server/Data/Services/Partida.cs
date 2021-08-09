@@ -4,18 +4,68 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+using System.ComponentModel;
+using System.Drawing;
+using System.Runtime.CompilerServices;
+
+
 using Server.Data.Model.MinesweeperPresentation;
 
 namespace Server.Data.Services {
-    public class Partida {
+    public class Partida :INotifyPropertyChanged {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged( [CallerMemberName] String propertyName = "" ) {
+            if( PropertyChanged != null ) {
+                PropertyChanged(this,new PropertyChangedEventArgs(propertyName));
+            }
+        }
+        
+
+
         public bool PartidaComenzada = false;
-        public MinesweeperLogica logica { get; set; }
+
+        private MinesweeperLogica logica;
+        public MinesweeperLogica Logica {
+            get { return this.logica; }
+            set {
+                if( value != this.logica ) {
+                    this.logica = value;
+                    NotifyPropertyChanged("Logica");
+                }
+            }
+            
+        }
+        private List<Jugador> players = new();
+        public List<Jugador> Players {
+            get { return this.players; }
+            set { 
+                if( value != this.players ) {
+                    this.players = value;
+                    NotifyPropertyChanged("Players");
+                }
+            }
+
+        }
         public string id { get; set; }
         public List<String> msgs { get; set; }
 
-        public List<Jugador> players { get; set; } = new();
+        
 
-        public  List<List<Casilla>> casillas{get;set;}
+        private  List<List<Casilla>> casillas{get;set;}
+        public List<List<Casilla>> Casillas {
+            get { return this.casillas; }
+            set {
+                if( value != this.casillas ) {
+                    this.casillas = value;
+                    NotifyPropertyChanged("Casillas");
+                }
+            }
+
+        }
+
+
 
         public Jugador this[int x] => players[x];
         public Jugador this[String username] => this.players.Where(x=>x.username==username).First();
@@ -37,7 +87,7 @@ namespace Server.Data.Services {
         }
 
         public Partida( MinesweeperLogica logica,string id ) {
-            this.logica = logica;
+            this.Logica = logica;
             this.id = id;
             this.msgs = new List<String>();
             this.casillas = createMineList(logica);
@@ -62,5 +112,11 @@ namespace Server.Data.Services {
             currentPlayerTourn++;
             if( this.currentPlayerTourn >= players.Count ) currentPlayerTourn = 0;
         }
+
+
+        public bool playerInRoom( String id ) {
+            return this.players.Where(x => x.username == id).Count() >0;
+        }
+
     }
 }
