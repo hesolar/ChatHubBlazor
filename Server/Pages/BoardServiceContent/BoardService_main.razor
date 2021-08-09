@@ -15,7 +15,7 @@
 
 @if( registroCorrecto || TableroActual.playerInRoom(username) ) {
     <Progress_Component acierto="aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="logica"></Progress_Component>
-    <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual[TableroActual.currentPlayerTourn].username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
+    <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual[TableroActual.CurrentPlayerTourn].username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
 
 
 
@@ -40,7 +40,13 @@
                                 @onmousewheel="( e ) => LeftClick(e,casilla)">
                             <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
                         </button>
-                    }
+                        <label>
+                            @*@(casilla.seleccionadaCuadrado.Equals(Casilla.original))
+                            @(!CanPlay)
+                            @(casilla.isZero)*@
+                        </label>
+                     }
+                
                 </BSRow>
             }
         </BSContainer>
@@ -105,8 +111,10 @@ else {
         if( b ) {
 
             registroCorrecto = true;
-            currentTourn = TableroActual.currentPlayerTourn;
-            this.CanPlay = this.TableroActual[TableroActual.currentPlayerTourn].username == username;
+            currentTourn = TableroActual.CurrentPlayerTourn;
+            this.CanPlay = this.TableroActual[TableroActual.CurrentPlayerTourn].username == username;
+
+            if(TableroActual[0].username != username ) InvokeAsync(StartTourn);
         }
     }
 
@@ -212,14 +220,7 @@ else {
 
 
 
-    public async Task ActualizarTurno() {
-        CanPlay = false;
-        valorCronometro = new TimeSpan(0,0,10);
-        this.TableroActual.dificultad++;
-        this.cronometroFuncionando = !cronometroFuncionando;
-        this.TableroActual.nextTourn();
-        currentTourn = TableroActual.currentPlayerTourn;
-    }
+
 
     public async Task RefreshPage() {
         await InvokeAsync(StateHasChanged);
@@ -228,7 +229,7 @@ else {
 
     public void ActualizarPuntuacion( long puntos ) {
         aciertoPuntuacion = puntos > 0;
-        TableroActual[TableroActual.currentPlayerTourn].puntuacion += puntos;
+        TableroActual[TableroActual.CurrentPlayerTourn].puntuacion += puntos;
     }
 
 
@@ -251,15 +252,20 @@ else {
 
 
         await RefreshPage();
-        if( TableroActual[TableroActual.currentPlayerTourn].username == username ) {
-            await RefreshPage();
-            Presentacion.ActualizarSeleccion(Casillas);
 
-            valorCronometro = new TimeSpan(0,0,10);
-            cronometroFuncionando = true;
+        while( !logica.Victory() ) {
 
-            await TimeLapse();
-            await ActualizarTurno();
+            TimeLapse();
+            if( TableroActual[TableroActual.CurrentPlayerTourn].username == username ) {
+
+                await RefreshPage();
+                Presentacion.ActualizarSeleccion(Casillas);
+                this.CanPlay = this.TableroActual[TableroActual.CurrentPlayerTourn].username == username;
+                valorCronometro = new TimeSpan(0,0,10);
+                cronometroFuncionando = true;
+
+                await TimeLapse();
+            }
         }
 
     }
@@ -280,17 +286,24 @@ else {
                 ActualizarPuntuacion(-5);
                 Presentacion.EstadoOriginalTablero(Casillas);
                 valorCronometro = new TimeSpan(0,0,10);
-
+                ActualizarTurno();
 
             }
 
         }
     }
-    public void StopCronometro() {
+
+    public async Task ActualizarTurno() {
+
+        valorCronometro = new TimeSpan(0,0,10);
+        this.TableroActual.dificultad++;
         this.cronometroFuncionando = false;
+        this.TableroActual.nextTourn();
+        this.CanPlay = this.TableroActual[TableroActual.CurrentPlayerTourn].username == username;
+
+        Presentacion.EstadoOriginalTablero(Casillas);
+        currentTourn = TableroActual.CurrentPlayerTourn;
     }
-
-
 
 
 

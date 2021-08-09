@@ -16,7 +16,7 @@ namespace Server.Data.Services {
     public class Partida :INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private void NotifyPropertyChanged( [CallerMemberName] String propertyName = "" ) {
+        private void NotifyPropertyChanged( [CallerMemberName] String propertyName="" ) {
             if( PropertyChanged != null ) {
                 PropertyChanged(this,new PropertyChangedEventArgs(propertyName));
             }
@@ -66,10 +66,23 @@ namespace Server.Data.Services {
         }
 
 
+        private int currentPlayerTourn { get; set; } = 0;
+        public int CurrentPlayerTourn {
+            get { return this.currentPlayerTourn; }
+            set {
+                if( value != this.currentPlayerTourn ) {
+                    this.currentPlayerTourn = value;
+                    NotifyPropertyChanged("CurrentPlayerTourn");
+                }
+            }
+
+        }
+
+
+
 
         public Jugador this[int x] => players[x];
         public Jugador this[String username] => this.players.Where(x=>x.username==username).First();
-        public int currentPlayerTourn { get; set; } = 0;
         public int dificultad { get; set; } = 0;
 
         public List<List<Casilla>> createMineList(MinesweeperLogica logica) {
