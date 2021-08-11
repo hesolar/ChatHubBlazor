@@ -4,13 +4,16 @@
     <h3>InfoPlayer Component</h3>
     Hello @username , you are playing on roomID: @roomId
     <br />
-    players connected:
+   
+    
+    @if( jugadores.Count>1){ 
+        <label> players connected:</label>
 
-    @foreach( Jugador p in @jugadores ) {
+    foreach( Jugador p in jugadores.Except(jugadores.Where(x => x.username == currentPlayerPlaying)) ) {
         <li> @p.username  </li> <br />
     }
-    Current Tourn playing:
-
+        <label> Current Tourn playing:</label>
+    }
 
     <input value="@currentPlayerPlaying" type="text" disabled />
 </div>
@@ -22,4 +25,7 @@
     [Parameter] public String roomId { get; set; }
     [Parameter] public String currentPlayerPlaying { get; set; }
     [Parameter] public String username { get; set; }
+
+
+
 }

@@ -36,17 +36,15 @@ namespace Server.Data.Model.MinesweeperPresentation {
         }
 
 
-        static public int RevealZeroSquaresRecursion( List<List<Casilla>> Casillas,Casilla casilla,MinesweeperLogica logicaBuscaminas,int casillasAbiertas=0 ) {
+        static public void RevealZeroSquaresRecursion( List<List<Casilla>> Casillas,Casilla casilla,MinesweeperLogica logicaBuscaminas,int casillasAbiertas=0 ) {
             
             List<Casilla> minesNeighbors = Presentacion.CasillasAdyacentes(Casillas,casilla);
 
             //las no zero las despliego
             var notZeroMines = minesNeighbors.Where(x => !x.flag && logicaBuscaminas.neighborBombs(x.X,x.Y) != 0).ToList();
             notZeroMines.ForEach(z => z.MakeMove(logicaBuscaminas.neighborBombs(z.X,z.Y)));
-            casillasAbiertas += notZeroMines.Count;
             //las casillas con 0
             List<Casilla> ZeroMines = minesNeighbors.Where(z => !z.flag && logicaBuscaminas.neighborBombs(z.X,z.Y)==0 && !z.isZero).ToList();
-            casillasAbiertas += ZeroMines.Count;
 
 
             foreach( Casilla m in ZeroMines ) {
@@ -63,7 +61,7 @@ namespace Server.Data.Model.MinesweeperPresentation {
                
 
             }
-            return casillasAbiertas;
+
         }
 
         static public List<List<Casilla>> crearTablero( int rows,MinesweeperLogica logicaBuscaminas ) {
@@ -85,7 +83,10 @@ namespace Server.Data.Model.MinesweeperPresentation {
 
       
 
-        static public void ActualizarSeleccion( List<List<Casilla>> Casillas ) {
+        static public List<List<Casilla>> ActualizarVentanaDeslizante( List<List<Casilla>> Casillas ) {
+            
+            
+            
             EstadoOriginalTablero(Casillas);
             List<Casilla> l = Casillas.SelectMany(x => x.Where(x => !x.isZero && !x.pulsado && !x.flag)).ToList();
             ventanaDeslizante.GenerateNewSquare(l);
@@ -106,14 +107,14 @@ namespace Server.Data.Model.MinesweeperPresentation {
             List<Casilla> y = Casillas.SelectMany(x => x.Where(z => z.Y >= ya && z.Y <= yb)).ToList();
             List<Casilla> xy = x.Intersect(y).ToList();
             if(!ComprobarMovimientosEnCuadrado(Casillas,xy) ) {
-                ActualizarSeleccion(Casillas);
-                return;
+                ActualizarVentanaDeslizante(Casillas);
+                
             }
 
             xy.ForEach(x => x.Seleccionar());
 
 
-
+            return Casillas;
         }
 
         private static bool ComprobarMovimientosEnCuadrado(List<List<Casilla>> Casillas, List<Casilla> ventana ) {
@@ -138,9 +139,23 @@ namespace Server.Data.Model.MinesweeperPresentation {
             casillas.AsParallel().ToList().ForEach(x => x.ForEach(x => x.seleccionadaCuadrado = Casilla.original));
         }
 
-        public static int CasillasSinUsar(List<List<Casilla>> casillas ) {
-
-            return casillas.SelectMany(x => x.Where(x => !x.pulsado || !x.flag || !x.isZero)).ToList().Count();
+        public static int CasillasAbiertas(List<List<Casilla>> casillas ,int filas) {
+            //double difficulty = (double) (rows * rows - dificultad) / (double) (rows * rows);
+          
+            
+            return casillas.SelectMany(x => x.Where(x => !x.pulsado && !x.flag && !x.isZero)).ToList().Count();
+            
         }
+
+        public static bool NingunaSeleccionada( List<List<Casilla>> casillas ) {
+            foreach(var rows in casillas){
+                foreach(var cas in rows ) {
+                    if( cas.isSelected() ) return false;
+                }
+            }
+            return true;
+        }
+
+  
     }
 }

@@ -41,6 +41,8 @@ namespace Server.Data.Model.MinesweeperLogic {
             totalBombs = BombsRemaining;
 
         }
+
+
         public bool Victory() {
             return this.BombsRemaining.Equals(0);
         }

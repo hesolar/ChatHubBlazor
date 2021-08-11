@@ -6,11 +6,15 @@
 
 
     Tiempo Turno:@{
-        double difficulty = (double) (rows * rows - dificultad) / (double) (rows * rows);
+        double difficulty = (double) (dificultad) / (double) (rows * rows);
 
 
-        <label>@( ((timeToMove * difficulty)).ToString("0.000"))</label>
+        <label>@((((double)dificultad/(double)(rows*rows))*timeToMove  ).ToString("0.0000"))</label>
     }
+    Dificultad Relativa: @((  100- ((double)dificultad/(double)(rows*rows))*100  ).ToString("00.00")) %
+
+
+
 </div>
 
 @code{
@@ -21,8 +25,9 @@
     public string getColor() {
 
         var tiempo = valorCronometro.TotalSeconds;
-        if( tiempo > 7 ) return "green";
-        if( tiempo > 4 ) return "orange";
+
+        if( tiempo > 4 ) return "green";
+        if( tiempo > 3 ) return "orange";
 
         else return "red";
     }

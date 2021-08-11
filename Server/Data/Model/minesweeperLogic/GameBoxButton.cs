@@ -13,8 +13,7 @@ namespace Server.Data.Model.MinesweeperLogic {
         public int Y { get; }
         private ButtonCurrentState State { get; set; }
         public bool IsBomb { get; }
-        public int bombsNeighbor { get; set;
-        }
+        public int bombsNeighbor { get; set;}
 
         public GameBoxButton( int x, int y, Boolean isBomb) {
             this.X = x;

@@ -34,7 +34,7 @@ namespace Server.Data.Model.MinesweeperPresentation {
             Presentacion.UnlockBoard(Casillas);
 
 
-            Presentacion.ActualizarSeleccion(Casillas);
+            Presentacion.ActualizarVentanaDeslizante(Casillas);
 
             TimeLapse(Casillas);
 
@@ -42,7 +42,7 @@ namespace Server.Data.Model.MinesweeperPresentation {
         }
 
         public async Task NewTourn( List<List<Casilla>> Casillas ) {
-            Presentacion.ActualizarSeleccion(Casillas);
+            Presentacion.ActualizarVentanaDeslizante(Casillas);
             cronometroFuncionando = false;
             this.valorCronometro = new TimeSpan(0,0,timeToMove);
             botonStartActivo = true;
@@ -67,7 +67,7 @@ namespace Server.Data.Model.MinesweeperPresentation {
                         valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
                     }
                     else {
-                        Presentacion.ActualizarSeleccion(Casillas);
+                        Presentacion.ActualizarVentanaDeslizante(Casillas);
                         valorCronometro = new TimeSpan(0,0,timeToMove);
                     }
 

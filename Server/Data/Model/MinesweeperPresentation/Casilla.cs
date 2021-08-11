@@ -16,7 +16,9 @@ namespace Server.Data.Model.MinesweeperPresentation {
         public Color ColorEstado { get; set; }
         public bool bomb;
         public bool flag = false;
-
+        public int bombasAdyacentes { get; set; }
+        
+        
         public static string original = "white";
         public static string seleccionado = "grey";
 
@@ -34,7 +36,6 @@ namespace Server.Data.Model.MinesweeperPresentation {
             this.bomb = bomb;
             this.text = "";
             this.isZero = true;
-
             this.seleccionadaCuadrado = original;
         }
         public void MakeMove( int bombsNeighbor ) {

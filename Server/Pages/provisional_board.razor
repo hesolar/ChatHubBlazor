@@ -143,7 +143,7 @@
         var notZeroMines = minesNeighbors.Where(x => !x.flag && game.neighborBombs(x.X,x.Y) != 0).ToList();
         notZeroMines.ForEach(z => z.MakeMove(game.neighborBombs(z.X,z.Y)));
 
-        //las casillas con 0
+        //las TableroActual.Casillas con 0
         var ZeroMines = minesNeighbors.Where(z => !z.flag && game.neighborBombs(z.X,z.Y).Equals(0)).ToList();
 
         foreach( Mine m in ZeroMines ) {

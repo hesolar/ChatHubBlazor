@@ -14,27 +14,20 @@
 
 
 @if( registroCorrecto || TableroActual.playerInRoom(username) ) {
-    <Progress_Component acierto="aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="logica"></Progress_Component>
-    <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual[TableroActual.CurrentPlayerTourn].username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
+    <Progress_Component acierto="aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
+    <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual.CurrentPlayerTourn.username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
 
-
-
-
-
-    @for( int i = 0; i < 10; i++ ) {
-        <br>
-    }
 
     <div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
         <BSContainer>
 
             <h3>Board Component</h3>
 
-            @foreach( var row in Casillas ) {
+            @foreach( var row in TableroActual.Casillas ) {
                 <BSRow>
-                    @*disabled="@(  )*@
+                    @*disabled="@( casilla.seleccionadaCuadrado.Equals(Casilla.original) )*@
                     @foreach( Casilla casilla in row ) {
-                        <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)|| !CanPlay || casilla.isZero)" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                        <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)||TableroActual.CurrentPlayerTourn.username!=username || casilla.isZero)" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
                                 @oncontextmenu=" () => RightClick(casilla)"
                                 @onclick="( e ) => LeftClick(e,casilla)"
                                 @onmousewheel="( e ) => LeftClick(e,casilla)">
@@ -42,23 +35,23 @@
                         </button>
                         <label>
                             @*@(casilla.seleccionadaCuadrado.Equals(Casilla.original))
-                            @(!CanPlay)
-                            @(casilla.isZero)*@
+                                @(!CanPlay)
+                                @(casilla.isZero)*@
                         </label>
-                     }
-                
+                    }
+
                 </BSRow>
             }
         </BSContainer>
 
 
 
-        @if( logica.Victory() ) {
-            this.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
+        @if( TableroActual.Logica.Victory() ) {
+            this.TableroActual.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
             <label> YOU WIN </label>
         }
         else {
-            <label>Flags Remaining:@logica.FlagsRemaining</label>
+            <label>Flags Remaining:@TableroActual.Logica.FlagsRemaining</label>
 
         }
 
@@ -73,50 +66,29 @@
 
 
     <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
-    <Cronometro_Component dificultad="this.dificultad" rows="logica.rows" timeToMove="10" valorCronometro="valorCronometro"></Cronometro_Component>
+    <Cronometro_Component dificultad="TableroActual.casillasAbiertas" rows="TableroActual.Logica.rows" timeToMove="TableroActual.timeToMove" valorCronometro="TableroActual.ValorCronometro"></Cronometro_Component>
     <InfoMatch_Component></InfoMatch_Component>
+    <ChatRoom></ChatRoom>
 }
 else {
     <label>This game has already start , try other room!</label>
 }
 
 
+
 @code {
+
+    public String s;
     public bool registroCorrecto = false;
-    public bool CanPlay;
-    MinesweeperLogica logica;
     [Parameter] public String roomId { set; get; }
-    public List<String> msgs;
-    List<List<Casilla>> Casillas;
-    String username;
-    Partida TableroActual;
-    public int currentTourn;
     public bool aciertoPuntuacion = true;
 
 
+    String username;
+    Partida TableroActual;
 
 
-    protected override void OnInitialized() {
-        ReadQueryString();
 
-
-        Partida[] ps = partida.partidas;
-
-        TableroActual = ps.Where(x => x.id == roomId).First();
-        logica = TableroActual.Logica;
-        this.Casillas = TableroActual.Casillas;
-
-        bool b = TableroActual.AddPlayer(username);
-
-        if( b ) {
-
-            registroCorrecto = true;
-            currentTourn = TableroActual.CurrentPlayerTourn;
-            this.CanPlay = this.TableroActual[TableroActual.CurrentPlayerTourn].username == username;
-
-            if(TableroActual[0].username != username ) InvokeAsync(StartTourn);
-        }
-    }
 
     public void ReadQueryString() {
         StringValues aux;
@@ -129,6 +101,16 @@ else {
             this.username = aux;
         }
     }
+    protected override void OnInitialized() {
+        ReadQueryString();
+
+
+        Partida[] ps = partida.partidas;
+        TableroActual = ps.Where(x => x.id == roomId).First();
+
+
+        registroCorrecto = TableroActual.AddPlayer(username);
+    }
 
 
     //Aciones mouse
@@ -136,27 +118,28 @@ else {
         //left click
         if( e.Detail == 1 ) {
             if( !casilla.pulsado ) {
-                if( !logica.IsButtonFlagged(casilla.X,casilla.Y) ) {
-
+                if( !TableroActual.Logica.IsButtonFlagged(casilla.X,casilla.Y) ) {
+                    Presentacion.EstadoOriginalTablero(TableroActual.Casillas);
                     if( !casilla.bomb ) {
-                        logica.MakeMove(casilla.X,casilla.Y);
+                        TableroActual.Logica.MakeMove(casilla.X,casilla.Y);
 
 
 
 
-                        int bombs = logica.neighborBombs(casilla.X,casilla.Y);
+                        int bombs = TableroActual.Logica.neighborBombs(casilla.X,casilla.Y);
 
                         casilla.MakeMove(bombs);
 
                         if( bombs == 0 ) {
-                            this.dificultad += Presentacion.RevealZeroSquaresRecursion(Casillas,casilla,logica);
+                            Presentacion.RevealZeroSquaresRecursion(TableroActual.Casillas,casilla,TableroActual.Logica);
+                            TableroActual.casillasAbiertas = Presentacion.CasillasAbiertas(this.TableroActual.Casillas,TableroActual.Casillas.Count);
                         }
+                        else TableroActual.casillasAbiertas--;
 
-                        ActualizarPuntuacion((long) (valorCronometro.TotalSeconds));
+                        ActualizarPuntuacion((long) (TableroActual.ValorCronometro.TotalSeconds));
 
                     }
-                    else ActualizarPuntuacion(5);
-                    await ActualizarTurno();
+                    else ActualizarPuntuacion(-5);
 
                     return;
                 }
@@ -170,141 +153,63 @@ else {
 
 
     }
-
     public void RightClick( Casilla casilla ) {
         //right click
         if( casilla.isSelected() ) {
-            if( !casilla.pulsado && !casilla.isZero ) {
+            if( !casilla.pulsado && !casilla.isZero && !casilla.flag) {
 
-                if( casilla.bomb && !casilla.flag ) {
-                    logica.Flag(casilla.X,casilla.Y);
+                if( casilla.bomb ) {
+                    TableroActual.Logica.Flag(casilla.X,casilla.Y);
                     casilla.Flag();
                     casilla.Block();
-                    ActualizarPuntuacion((long) (2 * this.valorCronometro.TotalSeconds));
+                    ActualizarPuntuacion((long) (2 * this.TableroActual.ValorCronometro.TotalSeconds));
+                    TableroActual.casillasAbiertas--;
                 }
                 else ActualizarPuntuacion(-5);
-                if( !this.logica.Victory() ) Presentacion.ActualizarSeleccion(Casillas);
-                ActualizarTurno();
+                Presentacion.EstadoOriginalTablero(TableroActual.Casillas);
             }
         }
     }
-
     public async Task MouseWheel( Casilla mine ) {
         if( !mine.pulsado ) return;
 
 
-        List<Casilla> flag = Presentacion.CasillasAdyacentes(Casillas,mine).Where(x => x.flag).ToList();
-        List<Casilla> notFlagAndNotOpen = Presentacion.CasillasAdyacentes(Casillas,mine).Where(x => !x.pulsado && !x.flag).ToList();
-        int bombsNeighbor = logica.neighborBombs(mine.X,mine.Y);
+        List<Casilla> flag = Presentacion.CasillasAdyacentes(TableroActual.Casillas,mine).Where(x => x.flag).ToList();
+        List<Casilla> notFlagAndNotOpen = Presentacion.CasillasAdyacentes(TableroActual.Casillas,mine).Where(x => !x.pulsado && !x.flag).ToList();
+        int bombsNeighbor = TableroActual.Logica.neighborBombs(mine.X,mine.Y);
         if( flag.Count.Equals(bombsNeighbor) ) {
+            Presentacion.EstadoOriginalTablero(TableroActual.Casillas);
             notFlagAndNotOpen.ForEach(x => {
 
 
-                bombsNeighbor = logica.neighborBombs(x.X,x.Y);
+                bombsNeighbor = TableroActual.Logica.neighborBombs(x.X,x.Y);
                 if( bombsNeighbor == 0 ) {
                     x.MakeMove(0);
-                    this.dificultad += Presentacion.RevealZeroSquaresRecursion(Casillas,x,logica);
+                    TableroActual.casillasAbiertas = Presentacion.CasillasAbiertas(this.TableroActual.Casillas,TableroActual.Casillas.Count);
                 }
                 else {
-                    if( logica.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
+                    if( TableroActual.Logica.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
                 }
             });
             mine.Block();
-            if( !Presentacion.MovesLeftOnSelectedArea(Casillas) ) {
-                Presentacion.ActualizarSeleccion(Casillas);
-            }
-            ActualizarPuntuacion((long) (this.valorCronometro.TotalSeconds));
-            await ActualizarTurno();
+            //if( !Presentacion.MovesLeftOnSelectedArea(TableroActual.Casillas) ) {
+            //    Presentacion.ActualizarVentanaDeslizante(TableroActual.Casillas);
+            //}
+            ActualizarPuntuacion((long) (TableroActual.ValorCronometro.TotalSeconds));
         }
     }
-
-
-
-
-
-    public async Task RefreshPage() {
-        await InvokeAsync(StateHasChanged);
-    }
-
 
     public void ActualizarPuntuacion( long puntos ) {
         aciertoPuntuacion = puntos > 0;
-        TableroActual[TableroActual.CurrentPlayerTourn].puntuacion += puntos;
+        TableroActual.CurrentPlayerTourn.puntuacion += puntos;
     }
 
-
-
-    //Crono
-    int dificultad = 0;
-    double timeToMove = 10;
-    TimeSpan valorCronometro = new TimeSpan(0,0,10);
-    bool cronometroFuncionando = false;
 
 
     async Task StartGame() {
-        await RefreshPage();
-        Presentacion.UnlockBoard(Casillas);
-        TableroActual.PartidaComenzada = true;
-        await StartTourn();
+
+        InvokeAsync(TableroActual.ComenzarPartida);
+    
     }
-
-    public async Task StartTourn() {
-
-
-        await RefreshPage();
-
-        while( !logica.Victory() ) {
-
-            TimeLapse();
-            if( TableroActual[TableroActual.CurrentPlayerTourn].username == username ) {
-
-                await RefreshPage();
-                Presentacion.ActualizarSeleccion(Casillas);
-                this.CanPlay = this.TableroActual[TableroActual.CurrentPlayerTourn].username == username;
-                valorCronometro = new TimeSpan(0,0,10);
-                cronometroFuncionando = true;
-
-                await TimeLapse();
-            }
-        }
-
-    }
-    public async Task TimeLapse() {
-        Console.WriteLine($"Im the player {username}");
-        while( cronometroFuncionando && !logica.Victory() ) {
-            await Task.Delay(1);
-            if( valorCronometro.TotalSeconds > 0 ) {
-                await Task.Delay(500);
-                valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
-
-                StateHasChanged();
-            }
-            else {
-                //valorCronometro = new TimeSpan(0,0,(int) (Math.Round(timeToMove)));
-                cronometroFuncionando = false;
-
-                ActualizarPuntuacion(-5);
-                Presentacion.EstadoOriginalTablero(Casillas);
-                valorCronometro = new TimeSpan(0,0,10);
-                ActualizarTurno();
-
-            }
-
-        }
-    }
-
-    public async Task ActualizarTurno() {
-
-        valorCronometro = new TimeSpan(0,0,10);
-        this.TableroActual.dificultad++;
-        this.cronometroFuncionando = false;
-        this.TableroActual.nextTourn();
-        this.CanPlay = this.TableroActual[TableroActual.CurrentPlayerTourn].username == username;
-
-        Presentacion.EstadoOriginalTablero(Casillas);
-        currentTourn = TableroActual.CurrentPlayerTourn;
-    }
-
-
 
 }
