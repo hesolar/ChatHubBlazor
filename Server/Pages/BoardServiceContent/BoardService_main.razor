@@ -155,7 +155,7 @@ else {
     }
     public void RightClick( Casilla casilla ) {
         //right click
-        if( casilla.isSelected()|| TableroActual.CurrentPlayerTourn.username==username ) {
+        if( casilla.isSelected()&& TableroActual.CurrentPlayerTourn.username==username ) {
             if( !casilla.pulsado && !casilla.isZero && !casilla.flag) {
 
                 if( casilla.bomb ) {
