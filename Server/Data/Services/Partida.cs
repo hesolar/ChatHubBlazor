@@ -224,7 +224,7 @@ namespace Server.Data.Services {
             int miliseconds = Convert.ToInt32(1000 * (((double) this.casillasAbiertas / (double) (Logica.rows * Logica.rows)) * timeToMove));
 
             valorCronometro = new TimeSpan(0,0,0,0,miliseconds);
-            nextTourn();
+
         }
 
 
