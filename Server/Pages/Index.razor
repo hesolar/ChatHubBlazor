@@ -1,11 +1,12 @@
 ﻿@page "/"
-
-@inject NavigationManager UriHelp
+@inject PartidaService partida
+@using Server.Data.Services
+@using Server.Pages.BoardServiceContent
 
 <h1>Hello, @(username ?? "Unknown")!</h1>
 
 
-@{ <p> @(username == null ? "Welcome to the brand new minesweeper." : "Are you ready?" )</p>}
+<p> @(username == null ? "Welcome to the brand new minesweeper." : "Are you ready?" )</p>
 
 
 <br />
@@ -22,21 +23,28 @@
 @if( State == States.Config ) {
     <h2> Now its time to create the room !</h2>
     <label for="rows"> Nº Rows</label>
-    <input type="number" id="rows" @bind="rows" />
+    <input type="number" id="rows" @bind-value="rows" />
     <button @onclick="@GoToRoom"> Create Room  </button>
 
     <br />
     <h2> Or join one already created </h2>
-    <input type="text" id="joinRoomId" @bind="joinRoomId" placeholder=" Enter room code" />
-    <button @onclick="JoinRoom"> Join Room  </button>
+    <input type="text" id="joinRoomId" @bind-value="joinRoomId" placeholder=" Enter room code" />
+    <button @onclick="joinRoom" > Join Room  </button>
+
 }
 
-
+    @if( State == States.JoinRoom  ) {
+        Partida[] ps = partida.partidas;
+        Partida TableroActual = ps.Where(x => x.id == joinRoomId).First();
+        <label>Playing on room: @joinRoomId</label>
+        <Server.Pages.BoardServiceContent.BoardService_main  roomId="joinRoomId" TableroActual="TableroActual" username="username"></Server.Pages.BoardServiceContent.BoardService_main>
+        
+    }
 
 
 @code{
     //state0 params: Introducir nombre
-    public enum States { IntroducirNombre, Config }
+    public enum States { IntroducirNombre, Config, CreateRoom, JoinRoom }
     public States State { get; set; } = States.IntroducirNombre;
 
 
@@ -49,7 +57,12 @@
     public void GoToRoom() {
         String RoomId = RoomCoderGenerator(5);
         if( string.IsNullOrEmpty(username) ) username = RoomCoderGenerator(6);
-        UriHelp.NavigateTo($"../boardService?roomId={RoomId}");
+
+    }
+
+
+    public void joinRoom() {
+        this.State = States.JoinRoom;
     }
 
     public string RoomCoderGenerator( int length ) {
@@ -57,10 +70,6 @@
         string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         return new string(Enumerable.Repeat(chars,length)
           .Select(s => s[random.Next(s.Length)]).ToArray());
-    }
-
-    public void JoinRoom() {
-        UriHelp.NavigateTo($"../boardService?roomId={joinRoomId}&username={username}");
     }
 
 

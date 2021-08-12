@@ -1,5 +1,5 @@
-﻿@page "/boardService"
-@inject PartidaService partida
+﻿
+
 @using Server.Data.Services
 @using Server.Data.Model
 @using Server.Data.Model.MinesweeperLogic
@@ -15,7 +15,7 @@
 
 @if( registroCorrecto || TableroActual.playerInRoom(username) ) {
     <Progress_Component acierto="aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
-    <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual.CurrentPlayerTourn.username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
+    <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual.CurrentPlayerTourn().username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
 
 
     <div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
@@ -27,7 +27,7 @@
                 <BSRow>
                     @*disabled="@( casilla.seleccionadaCuadrado.Equals(Casilla.original) )*@
                     @foreach( Casilla casilla in row ) {
-                        <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)||TableroActual.CurrentPlayerTourn.username!=username || casilla.isZero)" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                        <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)||TableroActual.CurrentPlayerTourn().username!=username || casilla.isZero)" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
                                 @oncontextmenu=" () => RightClick(casilla)"
                                 @onclick="( e ) => LeftClick(e,casilla)"
                                 @onmousewheel="( e ) => LeftClick(e,casilla)">
@@ -77,17 +77,15 @@ else {
 
 
 @code {
+    [Parameter] public String username { set; get; }
+    [Parameter] public String roomId { set; get; }
+    [Parameter] public Partida TableroActual { get; set; }
 
     public String s;
     public bool registroCorrecto = false;
-    [Parameter] public String roomId { set; get; }
+
+
     public bool aciertoPuntuacion = true;
-
-
-    String username;
-    Partida TableroActual;
-
-
 
 
     public void ReadQueryString() {
@@ -101,12 +99,18 @@ else {
             this.username = aux;
         }
     }
+
+
+
+
+
+
+
     protected override void OnInitialized() {
-        ReadQueryString();
+        //ReadQueryString();
 
 
-        Partida[] ps = partida.partidas;
-        TableroActual = ps.Where(x => x.id == roomId).First();
+
 
 
         registroCorrecto = TableroActual.AddPlayer(username);
@@ -155,7 +159,7 @@ else {
     }
     public void RightClick( Casilla casilla ) {
         //right click
-        if( casilla.isSelected()&& TableroActual.CurrentPlayerTourn.username==username ) {
+        if( casilla.isSelected()&& TableroActual.CurrentPlayerTourn().username==username ) {
             if( !casilla.pulsado && !casilla.isZero && !casilla.flag) {
 
                 if( casilla.bomb ) {
@@ -201,7 +205,7 @@ else {
 
     public void ActualizarPuntuacion( long puntos ) {
         aciertoPuntuacion = puntos > 0;
-        TableroActual.CurrentPlayerTourn.puntuacion += puntos;
+        TableroActual.CurrentPlayerTourn().puntuacion += puntos;
     }
 
 
@@ -209,7 +213,7 @@ else {
     async Task StartGame() {
 
         InvokeAsync(TableroActual.ComenzarPartida);
-    
+
     }
 
 }

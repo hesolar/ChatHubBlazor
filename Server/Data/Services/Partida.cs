@@ -12,77 +12,48 @@ using System.Runtime.CompilerServices;
 
 using Server.Data.Model.MinesweeperPresentation;
 using System.Threading;
+using PropertyChanged;
 
 namespace Server.Data.Services {
     public class Partida :INotifyPropertyChanged {
        //implementar la interfaz
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void NotifyPropertyChanged( [CallerMemberName] String propertyName="" ) {
-            if( PropertyChanged != null ) {
-                PropertyChanged(this,new PropertyChangedEventArgs(propertyName));
-            }
-        }
-        
+       
+       
 
+        public Partida( MinesweeperLogica logica,string id ) {
+            this.Logica = logica;
+            this.id = id;
+            this.msgs = new List<String>();
+            this.Casillas = createMineList(logica);
+            this.casillasAbiertas = logica.rows * logica.rows;
+
+        }
 
         public bool PartidaComenzada = false;
 
-        private MinesweeperLogica logica;
-        public MinesweeperLogica Logica {
-            get { return this.logica; }
-            set {
-                if( value != this.logica ) {
-                    this.logica = value;
-                    NotifyPropertyChanged("Logica");
-                }
-            }
-            
-        }
-        
-        
-        private List<Jugador> players = new();
-        public List<Jugador> Players {
-            get { return this.players; }
-            set { 
-                if( value != this.players ) {
-                    this.players = value;
-                    NotifyPropertyChanged("Players");
-                }
-            }
+        public MinesweeperLogica Logica { get; set; }
+  
 
-        }
+
+        public List<Jugador> Players{get; set; }=new();
+    
         
         public string id { get; set; }
         public List<String> msgs { get; set; }
 
-        private List<List<Casilla>> casillas;
-        public List<List<Casilla>> Casillas {
-            get { return this.casillas; }
-            set {
-                if( value != this.casillas ) {
-                    this.casillas = value;
-                    NotifyPropertyChanged("Casillas");
-                }
-            }
-
-        }
+        public List<List<Casilla>> Casillas { get; set; }
+      
 
         private int currentPlayerTourn { get; set; } = 0;
-        public Jugador CurrentPlayerTourn {
-            get { return players[this.currentPlayerTourn]; }
-            set {
-                if( value != players[this.currentPlayerTourn] ) {
-                    this.currentPlayerTourn =players.IndexOf(value);
-                    NotifyPropertyChanged("CurrentPlayerTourn");
-                }
-            }
+        public Jugador CurrentPlayerTourn() {
+           return this.Players[this.currentPlayerTourn];   
         }
 
 
 
 
-        public Jugador this[int x] => players[x];
-        public Jugador this[String username] => this.players.Where(x=>x.username==username).First();
+        public Jugador this[int x] => Players[x];
+        public Jugador this[String username] => this.Players.Where(x=>x.username==username).First();
         
         public int casillasAbiertas { get; set; }
 
@@ -117,22 +88,14 @@ namespace Server.Data.Services {
             return result;
         }
 
-        public Partida( MinesweeperLogica logica,string id ) {
-            this.Logica = logica;
-            this.id = id;
-            this.msgs = new List<String>();
-            this.Casillas = createMineList(logica);
-            this.casillasAbiertas = logica.rows * logica.rows;
-
-            
-        }
+        
 
         public bool AddPlayer(String newPLayer ) {
 
-            if( !players.Any(x=>x.username==newPLayer)) {
+            if( !Players.Any(x=>x.username==newPLayer)) {
 
                 if( !this.PartidaComenzada ) {
-                    this.players.Add(new Jugador(newPLayer));
+                    this.Players.Add(new Jugador(newPLayer));
                     return true;
                 }
             }
@@ -142,24 +105,23 @@ namespace Server.Data.Services {
 
         public void nextTourn() {
             currentPlayerTourn++;
-            if( this.currentPlayerTourn >= players.Count ) currentPlayerTourn = 0;
+            if( this.currentPlayerTourn >= Players.Count ) currentPlayerTourn = 0;
         }
 
 
         public bool playerInRoom( String id ) {
-            return this.players.Where(x => x.username == id).Count() >0;
+            return this.Players.Where(x => x.username == id).Count() >0;
         }
 
         public async Task ComenzarPartida() {
             this.PartidaComenzada = true;
             Presentacion.UnlockBoard(Casillas);
-            while( !logica.Victory() ) {
+            while( !Logica.Victory() ) {
             
-            Presentacion.ActualizarVentanaDeslizante(casillas);
-                cronometroFuncionando = true;
-             await TimeLapse();
+            Presentacion.ActualizarVentanaDeslizante(Casillas);
+            cronometroFuncionando = true;
+            await TimeLapse();
             Presentacion.EstadoOriginalTablero(Casillas);
-            NotifyPropertyChanged();
             nextTourn();
             }
         }
@@ -167,21 +129,11 @@ namespace Server.Data.Services {
 
 
         public double timeToMove = 5;
-        private TimeSpan valorCronometro = new TimeSpan(0,0,5);
-        public TimeSpan ValorCronometro {
-            get { return this.valorCronometro; }
-            set {
-                if( value != valorCronometro ) {
-                    this.valorCronometro = value;
-                    NotifyPropertyChanged();
-                }
-            }
+        public TimeSpan ValorCronometro { get; set; } = new TimeSpan(0,0,5);
         
-        } 
         public bool cronometroFuncionando = false;
 
-
-
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public async Task StartTourn() {
 
@@ -193,7 +145,7 @@ namespace Server.Data.Services {
                 //if( TableroActual[TableroActual.CurrentPlayerTourn].username == username ) {
 
                     Presentacion.ActualizarVentanaDeslizante(Casillas);
-                    valorCronometro = new TimeSpan(0,0,10);
+                    ValorCronometro = new TimeSpan(0,0,10);
                     cronometroFuncionando = true;
 
                     await TimeLapse();
@@ -202,11 +154,11 @@ namespace Server.Data.Services {
 
         }
         public async Task TimeLapse() {
-            while( cronometroFuncionando && !Logica.Victory() && !Presentacion.NingunaSeleccionada(casillas)) {
+            while( cronometroFuncionando && !Logica.Victory() && !Presentacion.NingunaSeleccionada(Casillas)) {
                 await Task.Delay(1);
-                if( valorCronometro.TotalSeconds > 0 ) {
+                if( ValorCronometro.TotalSeconds > 0 ) {
                     await Task.Delay(500);
-                    valorCronometro = valorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
+                    ValorCronometro = ValorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
 
 
                 }
@@ -214,16 +166,17 @@ namespace Server.Data.Services {
                     //valorCronometro = new TimeSpan(0,0,(int) (Math.Round(timeToMove)));
                     cronometroFuncionando = false;
 
-                    CurrentPlayerTourn.puntuacion += -5;
+                    CurrentPlayerTourn().puntuacion += -5;
                     
 
                 }
 
             }
-            Presentacion.EstadoOriginalTablero(Casillas);
+            Casillas.ForEach(x => x.ForEach(x => x.EstadoOriginal()));
+
             int miliseconds = Convert.ToInt32(1000 * (((double) this.casillasAbiertas / (double) (Logica.rows * Logica.rows)) * timeToMove));
 
-            valorCronometro = new TimeSpan(0,0,0,0,miliseconds);
+            ValorCronometro = new TimeSpan(0,0,0,0,miliseconds);
 
         }
 
