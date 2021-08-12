@@ -1,0 +1,52 @@
+﻿@using BlazorStrap
+@using Server.Data.Model.MinesweeperPresentation
+@inherits Tablerocs
+@using Server.Data.Services
+<h3>Tablero</h3>
+
+<div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
+    <BSContainer>
+        <label>Playing on room: @roomId</label>
+        <h3>Board Component</h3>
+
+        @foreach( var row in TableroActual.Casillas ) {
+            <BSRow>
+                @*disabled="@( casilla.seleccionadaCuadrado.Equals(Casilla.original) )*@
+                @foreach( Casilla casilla in row ) {
+                    <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)||TableroActual.CurrentPlayerTourn().username!=username || casilla.isZero)" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
+                            @oncontextmenu=" () => RightClick(casilla)"
+                            @onclick="( e ) => LeftClick(e,casilla)"
+                            @onmousewheel="( e ) => LeftClick(e,casilla)">
+                        <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
+                    </button>
+                    <label>
+                        @*@(casilla.seleccionadaCuadrado.Equals(Casilla.original))
+                            @(!CanPlay)
+                            @(casilla.isZero)*@
+                    </label>
+                }
+
+            </BSRow>
+        }
+    </BSContainer>
+
+
+
+    @if( TableroActual.Logica.Victory() ) {
+        this.TableroActual.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
+        <label> YOU WIN </label>
+    }
+    else {
+        <label>Flags Remaining:@TableroActual.Logica.FlagsRemaining</label>
+
+    }
+
+
+
+    <button hidden="@TableroActual.PartidaComenzada" disabled="@(TableroActual.PartidaComenzada || TableroActual[0].username!=username )" @onclick="StartGame">Star</button>
+
+
+</div>
+
+<Progress_Component acierto="this.aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
+

@@ -1,5 +1,4 @@
 ﻿
-
 @using Server.Data.Services
 @using Server.Data.Model
 @using Server.Data.Model.MinesweeperLogic
@@ -15,61 +14,18 @@
 
 @if( registroCorrecto || TableroActual.playerInRoom(username) ) {
 
-    <Progress_Component acierto="aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
     <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual.CurrentPlayerTourn().username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
 
 
-    <div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
-        <BSContainer>
-            <label>Playing on room: @roomId</label>
-            <h3>Board Component</h3>
+    <Tablero TableroActual="TableroActual" username="@username" roomId="@roomId"></Tablero>
 
-            @foreach( var row in TableroActual.Casillas ) {
-                <BSRow>
-                    @*disabled="@( casilla.seleccionadaCuadrado.Equals(Casilla.original) )*@
-                    @foreach( Casilla casilla in row ) {
-                        <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)||TableroActual.CurrentPlayerTourn().username!=username || casilla.isZero)" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
-                                @oncontextmenu=" () => RightClick(casilla)"
-                                @onclick="( e ) => LeftClick(e,casilla)"
-                                @onmousewheel="( e ) => LeftClick(e,casilla)">
-                            <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
-                        </button>
-                        <label>
-                            @*@(casilla.seleccionadaCuadrado.Equals(Casilla.original))
-                                @(!CanPlay)
-                                @(casilla.isZero)*@
-                        </label>
-                    }
-
-                </BSRow>
-            }
-        </BSContainer>
-
-
-
-        @if( TableroActual.Logica.Victory() ) {
-            this.TableroActual.Casillas.ForEach(x => x.ForEach(y => y.pulsado = true));
-            <label> YOU WIN </label>
-        }
-        else {
-            <label>Flags Remaining:@TableroActual.Logica.FlagsRemaining</label>
-
-        }
-
-
-
-        <button hidden="@TableroActual.PartidaComenzada" disabled="@(TableroActual.PartidaComenzada || TableroActual[0].username!=username )" @onclick="StartGame">Star</button>
-
-
-    </div>
     <ChatRoom username="username" roomid="roomId"></ChatRoom>
 
 
-
-    <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()" ></ScoreBoard_Component>
+    <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
     <Cronometro_Component dificultad="TableroActual.casillasAbiertas" rows="TableroActual.Logica.rows" timeToMove="TableroActual.timeToMove" valorCronometro="TableroActual.ValorCronometro"></Cronometro_Component>
     <InfoMatch_Component></InfoMatch_Component>
-    
+
 }
 else {
     <label>This game has already start , try other room!</label>
@@ -78,134 +34,17 @@ else {
 
 
 @code {
-    [Parameter] public String username { set; get; }
-    [Parameter] public String roomId { set; get; }
     [Parameter] public Partida TableroActual { get; set; }
+    [Parameter] public String roomId { set; get; }
+    [Parameter] public String username { get; set; }
+
 
     public bool registroCorrecto = false;
-    public bool aciertoPuntuacion = true;
-
-
-    //public void ReadQueryString() {
-    //    StringValues aux;
-    //    var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-    //    if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid",out aux) ) {
-    //        this.roomId = aux;
-    //    }
-    //    uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-    //    if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("username",out aux) ) {
-    //        this.username = aux;
-    //    }
-    //}
-
-
-
-
-
-
 
     protected override void OnInitialized() {
         registroCorrecto = TableroActual.AddPlayer(username);
     }
 
 
-    //Aciones mouse
-    public async Task LeftClick( MouseEventArgs e,Casilla casilla ) {
-        //left click
-        if( e.Detail == 1 ) {
-            if( !casilla.pulsado ) {
-                if( !TableroActual.Logica.IsButtonFlagged(casilla.X,casilla.Y) ) {
-                    Presentacion.EstadoOriginalTablero(TableroActual.Casillas);
-                    if( !casilla.bomb ) {
-                        TableroActual.Logica.MakeMove(casilla.X,casilla.Y);
-
-
-
-
-                        int bombs = TableroActual.Logica.neighborBombs(casilla.X,casilla.Y);
-
-                        casilla.MakeMove(bombs);
-
-                        if( bombs == 0 ) {
-                            Presentacion.RevealZeroSquaresRecursion(TableroActual.Casillas,casilla,TableroActual.Logica);
-                            TableroActual.casillasAbiertas = Presentacion.CasillasAbiertas(this.TableroActual.Casillas,TableroActual.Casillas.Count);
-                        }
-                        else TableroActual.casillasAbiertas--;
-
-                        ActualizarPuntuacion((long) (TableroActual.ValorCronometro.TotalSeconds));
-
-                    }
-                    else ActualizarPuntuacion(-5);
-
-                    return;
-                }
-
-
-            }
-            else MouseWheel(casilla);
-
-        }
-
-
-
-    }
-    public void RightClick( Casilla casilla ) {
-        //right click
-        if( casilla.isSelected()&& TableroActual.CurrentPlayerTourn().username==username ) {
-            if( !casilla.pulsado && !casilla.isZero && !casilla.flag) {
-
-                if( casilla.bomb ) {
-                    TableroActual.Logica.Flag(casilla.X,casilla.Y);
-                    casilla.Flag();
-                    casilla.Block();
-                    ActualizarPuntuacion((long) (2 * this.TableroActual.ValorCronometro.TotalSeconds));
-                    TableroActual.casillasAbiertas--;
-                }
-                else ActualizarPuntuacion(-5);
-                Presentacion.EstadoOriginalTablero(TableroActual.Casillas);
-            }
-        }
-    }
-    public async Task MouseWheel( Casilla mine ) {
-        if( !mine.pulsado ) return;
-
-
-        List<Casilla> flag = Presentacion.CasillasAdyacentes(TableroActual.Casillas,mine).Where(x => x.flag).ToList();
-        List<Casilla> notFlagAndNotOpen = Presentacion.CasillasAdyacentes(TableroActual.Casillas,mine).Where(x => !x.pulsado && !x.flag).ToList();
-        int bombsNeighbor = TableroActual.Logica.neighborBombs(mine.X,mine.Y);
-        if( flag.Count.Equals(bombsNeighbor) ) {
-            Presentacion.EstadoOriginalTablero(TableroActual.Casillas);
-            notFlagAndNotOpen.ForEach(x => {
-
-
-                bombsNeighbor = TableroActual.Logica.neighborBombs(x.X,x.Y);
-                if( bombsNeighbor == 0 ) {
-                    x.MakeMove(0);
-                    TableroActual.casillasAbiertas = Presentacion.CasillasAbiertas(this.TableroActual.Casillas,TableroActual.Casillas.Count);
-                }
-                else {
-                    if( TableroActual.Logica.MakeMove(x.X,x.Y) ) x.MakeMove(bombsNeighbor);
-                }
-            });
-            mine.Block();
-            //if( !Presentacion.MovesLeftOnSelectedArea(TableroActual.Casillas) ) {
-            //    Presentacion.ActualizarVentanaDeslizante(TableroActual.Casillas);
-            //}
-            ActualizarPuntuacion((long) (TableroActual.ValorCronometro.TotalSeconds));
-        }
-    }
-
-    public void ActualizarPuntuacion( long puntos ) {
-        aciertoPuntuacion = puntos > 0;
-        TableroActual.CurrentPlayerTourn().puntuacion += puntos;
-    }
-
-
-
-    async Task StartGame() {
-
-        InvokeAsync(TableroActual.ComenzarPartida);
-
-    }
 
 }
