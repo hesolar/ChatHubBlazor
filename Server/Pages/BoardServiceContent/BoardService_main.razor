@@ -14,17 +14,14 @@
 
 @if( registroCorrecto || TableroActual.playerInRoom(username) ) {
 
-    <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual.CurrentPlayerTourn().username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
-
-
+    <br><br><br><br><br>
     <Tablero TableroActual="TableroActual" username="@username" roomId="@roomId"></Tablero>
-
+    <br><br>
     <ChatRoom username="username" roomid="roomId"></ChatRoom>
-
-
+    <br><br>
     <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
+    <br><br><br><br><br><br><br><br><br><br>
     <Cronometro_Component dificultad="TableroActual.casillasAbiertas" rows="TableroActual.Logica.rows" timeToMove="TableroActual.timeToMove" valorCronometro="TableroActual.ValorCronometro"></Cronometro_Component>
-    <InfoMatch_Component></InfoMatch_Component>
 
 }
 else {

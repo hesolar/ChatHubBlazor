@@ -4,11 +4,12 @@
 @using Server.Data.Services
 <h3>Tablero</h3>
 
-<div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
+<div class="card" style=" align-items: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
     <BSContainer>
         <label>Playing on room: @roomId</label>
         <h3>Board Component</h3>
-
+        <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual.CurrentPlayerTourn().username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
+        <br><br><br><br><br>
         @foreach( var row in TableroActual.Casillas ) {
             <BSRow>
                 @*disabled="@( casilla.seleccionadaCuadrado.Equals(Casilla.original) )*@
@@ -21,8 +22,8 @@
                     </button>
                     <label>
                         @*@(casilla.seleccionadaCuadrado.Equals(Casilla.original))
-                            @(!CanPlay)
-                            @(casilla.isZero)*@
+                        @(!CanPlay)
+                        @(casilla.isZero)*@
                     </label>
                 }
 
@@ -45,8 +46,8 @@
 
     <button hidden="@TableroActual.PartidaComenzada" disabled="@(TableroActual.PartidaComenzada || TableroActual[0].username!=username )" @onclick="StartGame">Star</button>
 
+    <Progress_Component acierto="this.aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
 
 </div>
 
-<Progress_Component acierto="this.aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
 
