@@ -12,7 +12,6 @@
         <br><br><br><br><br>
         @foreach( var row in TableroActual.Casillas ) {
             <BSRow>
-                @*disabled="@( casilla.seleccionadaCuadrado.Equals(Casilla.original) )*@
                 @foreach( Casilla casilla in row ) {
                     <button disabled="@(casilla.seleccionadaCuadrado.Equals(Casilla.original)||TableroActual.CurrentPlayerTourn().username!=username || casilla.isZero)" style="width:30px; background-color:@casilla.seleccionadaCuadrado"
                             @oncontextmenu=" () => RightClick(casilla)"
@@ -20,11 +19,6 @@
                             @onmousewheel="( e ) => LeftClick(e,casilla)">
                         <BSBadge Color="@casilla.ColorEstado">  @casilla.text  </BSBadge>
                     </button>
-                    <label>
-                        @*@(casilla.seleccionadaCuadrado.Equals(Casilla.original))
-                        @(!CanPlay)
-                        @(casilla.isZero)*@
-                    </label>
                 }
 
             </BSRow>
