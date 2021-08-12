@@ -1,21 +1,24 @@
 ﻿@using Data.Model
 
-<div class="card" style="border: dotted; width: fit-content ;float:left ">
+<div class="card" style="border: dotted; width: contain ;float:left ">
     <h3>InfoPlayer Component</h3>
     Hello @username , you are playing on roomID: @roomId
     <br />
-   
-    
-    @if( jugadores.Count>1){ 
+
+
+    @if( jugadores.Count > 1 ) {
         <label> players connected:</label>
 
-    foreach( Jugador p in jugadores.Except(jugadores.Where(x => x.username == currentPlayerPlaying)) ) {
-        <li> @p.username  </li> <br />
-    }
+        foreach( Jugador p in jugadores.Except(jugadores.Where(x => x.username == currentPlayerPlaying)) ) {
+            <li> @p.username  </li> <br />
+        }
         <label> Current Tourn playing:</label>
     }
 
     <input value="@currentPlayerPlaying" type="text" disabled />
+
+   
+
 </div>
 
 

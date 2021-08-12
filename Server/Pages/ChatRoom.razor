@@ -52,24 +52,11 @@
 
 
 @code {
-    /*parameters in url */
-    protected override void OnInitialized() {
-        ReadQueryString();
-    }
-    public void ReadQueryString() {
-        StringValues roomId;
-        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-        if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid",out roomId) ) {
-            this.roomid = roomId;
-        }
-        uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-        if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("username",out roomId) ) {
-            this.username = roomId;
-        }
-    }
 
 
+    [Parameter]
     public string roomid { set; get; }
+    [Parameter]
     public string username { set; get; }
 
 
@@ -138,6 +125,8 @@
     }
 
     public bool validateUserName() {
+
+        if( username == null ) return false;
         return !string.IsNullOrEmpty(this.username.Trim());
     }
 

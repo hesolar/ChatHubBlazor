@@ -14,13 +14,14 @@
 
 
 @if( registroCorrecto || TableroActual.playerInRoom(username) ) {
+
     <Progress_Component acierto="aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
     <InfoPlayer_Component username="username" roomId="roomId" currentPlayerPlaying="@this.TableroActual.CurrentPlayerTourn().username" jugadores="@TableroActual.Players"></InfoPlayer_Component>
 
 
     <div class="card" style="align-content: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
         <BSContainer>
-
+            <label>Playing on room: @roomId</label>
             <h3>Board Component</h3>
 
             @foreach( var row in TableroActual.Casillas ) {
@@ -61,14 +62,14 @@
 
 
     </div>
+    <ChatRoom username="username" roomid="roomId"></ChatRoom>
 
 
 
-
-    <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
+    <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()" ></ScoreBoard_Component>
     <Cronometro_Component dificultad="TableroActual.casillasAbiertas" rows="TableroActual.Logica.rows" timeToMove="TableroActual.timeToMove" valorCronometro="TableroActual.ValorCronometro"></Cronometro_Component>
     <InfoMatch_Component></InfoMatch_Component>
-    <ChatRoom></ChatRoom>
+    
 }
 else {
     <label>This game has already start , try other room!</label>
@@ -81,24 +82,21 @@ else {
     [Parameter] public String roomId { set; get; }
     [Parameter] public Partida TableroActual { get; set; }
 
-    public String s;
     public bool registroCorrecto = false;
-
-
     public bool aciertoPuntuacion = true;
 
 
-    public void ReadQueryString() {
-        StringValues aux;
-        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-        if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid",out aux) ) {
-            this.roomId = aux;
-        }
-        uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-        if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("username",out aux) ) {
-            this.username = aux;
-        }
-    }
+    //public void ReadQueryString() {
+    //    StringValues aux;
+    //    var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+    //    if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("roomid",out aux) ) {
+    //        this.roomId = aux;
+    //    }
+    //    uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+    //    if( QueryHelpers.ParseQuery(uri.Query).TryGetValue("username",out aux) ) {
+    //        this.username = aux;
+    //    }
+    //}
 
 
 
@@ -107,12 +105,6 @@ else {
 
 
     protected override void OnInitialized() {
-        //ReadQueryString();
-
-
-
-
-
         registroCorrecto = TableroActual.AddPlayer(username);
     }
 
