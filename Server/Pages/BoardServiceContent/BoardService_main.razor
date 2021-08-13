@@ -17,14 +17,6 @@
 
     <br>
     <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
     <Tablero ComenzarPartida="(e)=>ComenzarPartida(e)" TableroActual="TableroActual" username="@username" roomId="@roomId"></Tablero>
     <br>
     <br>
@@ -88,8 +80,8 @@ else {
         while( TableroActual.cronometroFuncionando && !TableroActual.Logica.Victory() && !Presentacion.NingunaSeleccionada(TableroActual.Casillas) ) {
             await Task.Delay(1);
             if( TableroActual.ValorCronometro.TotalSeconds > 0 ) {
-                await Task.Delay(500);
-                TableroActual.ValorCronometro = TableroActual.ValorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
+                await Task.Delay(100);
+                TableroActual.ValorCronometro = TableroActual.ValorCronometro.Subtract(new TimeSpan(0,0,0,0,100));
                 InvokeAsync(StateHasChanged);
 
             }
