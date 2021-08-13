@@ -13,15 +13,35 @@
 
 
 @if( registroCorrecto || TableroActual.playerInRoom(username) ) {
-
-    <br><br><br><br><br>
-    <Tablero TableroActual="TableroActual" username="@username" roomId="@roomId"></Tablero>
-    <br><br>
-    <ChatRoom username="username" roomid="roomId"></ChatRoom>
-    <br><br>
-    <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
-    <br><br><br><br><br><br><br><br><br><br>
     <Cronometro_Component dificultad="TableroActual.casillasAbiertas" rows="TableroActual.Logica.rows" timeToMove="TableroActual.timeToMove" valorCronometro="TableroActual.ValorCronometro"></Cronometro_Component>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <Tablero ComenzarPartida="(e)=>ComenzarPartida(e)" TableroActual="TableroActual" username="@username" roomId="@roomId"></Tablero>
+    <br>
+    <br>
+    <ChatRoom username="username" roomid="roomId"></ChatRoom>
+    <br>
+    <br>
+    <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
 
 }
 else {
@@ -40,6 +60,56 @@ else {
 
     protected override void OnInitialized() {
         registroCorrecto = TableroActual.AddPlayer(username);
+    }
+
+    public void Refresh() {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public async Task ComenzarPartida( System.EventArgs e ) {
+        TableroActual.PartidaComenzada = true;
+        Presentacion.UnlockBoard(TableroActual.Casillas);
+        InvokeAsync(Comenzar);
+    }
+    public async Task Comenzar() {
+
+        while( !TableroActual.Logica.Victory() ) {
+
+            Presentacion.ActualizarVentanaDeslizante(TableroActual.Casillas);
+            StateHasChanged();
+            TableroActual.cronometroFuncionando = true;
+            await TimeLapse();
+            Presentacion.EstadoOriginalTablero(TableroActual.Casillas);
+            StateHasChanged();
+            TableroActual.nextTourn();
+        }
+    }
+    public async Task TimeLapse() {
+        while( TableroActual.cronometroFuncionando && !TableroActual.Logica.Victory() && !Presentacion.NingunaSeleccionada(TableroActual.Casillas) ) {
+            await Task.Delay(1);
+            if( TableroActual.ValorCronometro.TotalSeconds > 0 ) {
+                await Task.Delay(500);
+                TableroActual.ValorCronometro = TableroActual.ValorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
+                InvokeAsync(StateHasChanged);
+
+            }
+            else {
+                //valorCronometro = new TimeSpan(0,0,(int) (Math.Round(timeToMove)));
+                TableroActual.cronometroFuncionando = false;
+
+                TableroActual.CurrentPlayerTourn().puntuacion += -5;
+                InvokeAsync(StateHasChanged);
+
+            }
+
+        }
+        TableroActual.Casillas.ForEach(x => x.ForEach(x => x.EstadoOriginal()));
+
+        int miliseconds = Convert.ToInt32(1000 * (((double) TableroActual.casillasAbiertas / (double) (TableroActual.Logica.rows * TableroActual.Logica.rows)) * TableroActual.timeToMove));
+
+        TableroActual.ValorCronometro = new TimeSpan(0,0,0,0,miliseconds);
+        InvokeAsync(StateHasChanged);
+
     }
 
 

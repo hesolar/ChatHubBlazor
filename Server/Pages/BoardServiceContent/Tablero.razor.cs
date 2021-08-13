@@ -107,9 +107,10 @@ namespace Server.Pages.BoardServiceContent {
             TableroActual.CurrentPlayerTourn().puntuacion += puntos;
         }
 
-        public async Task StartGame() {
-            TableroActual.ComenzarPartida();
-        }
+     
+
+        [Parameter]
+        public EventCallback<MouseEventArgs> ComenzarPartida { get; set; }
 
     }
 }

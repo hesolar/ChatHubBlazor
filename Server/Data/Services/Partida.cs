@@ -113,18 +113,7 @@ namespace Server.Data.Services {
             return this.Players.Where(x => x.username == id).Count() >0;
         }
 
-        public async Task ComenzarPartida() {
-            this.PartidaComenzada = true;
-            Presentacion.UnlockBoard(Casillas);
-            while( !Logica.Victory() ) {
-            
-            Presentacion.ActualizarVentanaDeslizante(Casillas);
-            cronometroFuncionando = true;
-            await TimeLapse();
-            Presentacion.EstadoOriginalTablero(Casillas);
-            nextTourn();
-            }
-        }
+        
 
 
 
@@ -135,50 +124,25 @@ namespace Server.Data.Services {
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public async Task StartTourn() {
+        //public async Task StartTourn() {
 
 
 
-            while( !Logica.Victory() ) {
+        //    while( !Logica.Victory() ) {
 
-                await TimeLapse();
-                //if( TableroActual[TableroActual.CurrentPlayerTourn].username == username ) {
+        //        await TimeLapse();
+        //        //if( TableroActual[TableroActual.CurrentPlayerTourn].username == username ) {
 
-                    Presentacion.ActualizarVentanaDeslizante(Casillas);
-                    ValorCronometro = new TimeSpan(0,0,10);
-                    cronometroFuncionando = true;
+        //            Presentacion.ActualizarVentanaDeslizante(Casillas);
+        //            ValorCronometro = new TimeSpan(0,0,10);
+        //            cronometroFuncionando = true;
 
-                    await TimeLapse();
-                //}
-            }
+        //            await TimeLapse();
+        //        //}
+        //    }
 
-        }
-        public async Task TimeLapse() {
-            while( cronometroFuncionando && !Logica.Victory() && !Presentacion.NingunaSeleccionada(Casillas)) {
-                await Task.Delay(1);
-                if( ValorCronometro.TotalSeconds > 0 ) {
-                    await Task.Delay(500);
-                    ValorCronometro = ValorCronometro.Subtract(new TimeSpan(0,0,0,0,500));
-
-
-                }
-                else {
-                    //valorCronometro = new TimeSpan(0,0,(int) (Math.Round(timeToMove)));
-                    cronometroFuncionando = false;
-
-                    CurrentPlayerTourn().puntuacion += -5;
-                    
-
-                }
-
-            }
-            Casillas.ForEach(x => x.ForEach(x => x.EstadoOriginal()));
-
-            int miliseconds = Convert.ToInt32(1000 * (((double) this.casillasAbiertas / (double) (Logica.rows * Logica.rows)) * timeToMove));
-
-            ValorCronometro = new TimeSpan(0,0,0,0,miliseconds);
-
-        }
+        //}
+        
 
 
 
