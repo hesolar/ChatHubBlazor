@@ -13,7 +13,7 @@
             <th>Username</th>
             <th>Score</th>
         </tr>
-        @foreach( Jugador p in jugadores ) {
+        @foreach( Jugador p in jugadores.OrderByDescending(x=>x.puntuacion) ) {
 
             <tr>
                 <td> @p.username</td>

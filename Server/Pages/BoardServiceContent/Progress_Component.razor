@@ -14,7 +14,7 @@
                     box-sizing: border-box;
                     height: 20px;
                     width: 80px"
-           value="@puntuacion" min="0" max="@logicaBuscaminas." step="1" disabled id="puntuacion" />
+           @bind="@(puntuacion)" step="0.01" disabled id="puntuacion" />
 
     <br />  Progressbar: <input type="range" value="@( logicaBuscaminas.totalBombs - logicaBuscaminas.FlagsRemaining)" disabled style="color:mediumpurple" min="0" step="1" max="@logicaBuscaminas.totalBombs" />
 
@@ -25,7 +25,7 @@
 
 
 @code {
-    [Parameter]   public long puntuacion { get; set; }
+    [Parameter]   public float puntuacion { get; set; }
     [Parameter] public bool acierto { get; set; }
     [Parameter] public MinesweeperLogica logicaBuscaminas { get; set; }
 }

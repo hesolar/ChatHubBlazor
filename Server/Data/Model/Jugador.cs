@@ -13,7 +13,7 @@ namespace Server.Data.Model
             puntuacion = 0;
         }
         public string username;
-        public long puntuacion { get; set; }
+        public float puntuacion { get; set; }
 
         public void ChangePuntuacion(long puntos)
         {

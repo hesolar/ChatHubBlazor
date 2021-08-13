@@ -20,7 +20,7 @@
     <Tablero ComenzarPartida="(e)=>ComenzarPartida(e)" TableroActual="TableroActual" username="@username" roomId="@roomId"></Tablero>
     <br>
     <br>
-    <ChatRoom username="username" roomid="roomId"></ChatRoom>
+    <ChatRoom username="@username" roomid="roomId"></ChatRoom>
     <br>
     <br>
     <ScoreBoard_Component jugadores="this.TableroActual.Players.OrderBy(x => x.puntuacion).ToList()"></ScoreBoard_Component>
@@ -47,13 +47,45 @@ else {
     [Parameter] public String roomId { set; get; }
     [Parameter] public String username { get; set; }
 
+    static  public Dictionary<string,List<Jugador>> jugadoresActulizacion;
+    static public Dictionary<string,TimeSpan> Crono;
 
     public bool registroCorrecto = false;
 
     protected override void OnInitialized() {
+        if( jugadoresActulizacion == null ) jugadoresActulizacion = new();
+        if( Crono == null ) Crono = new();
         registroCorrecto = TableroActual.AddPlayer(username);
-    }
 
+
+        var xd= TableroActual.Players.ToList();
+        jugadoresActulizacion.Add(username,xd);
+        var yd = TableroActual.ValorCronometro;
+        Crono.Add(username,yd);
+
+        InvokeAsync(ActualizarParametros);
+
+    }
+    public async Task ActualizarParametros(){
+        while( !TableroActual.PartidaComenzada ) {
+            await Task.Delay(200);
+            if( jugadoresActulizacion[username].Count != TableroActual.Players.Count ) {
+                jugadoresActulizacion[username] = TableroActual.Players;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        jugadoresActulizacion = new();
+        while( !TableroActual.Logica.Victory() ) {
+            await Task.Delay(500);
+            if(Crono[username]!= TableroActual.ValorCronometro ) {
+                Crono[username] = TableroActual.ValorCronometro;
+                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
+
+            }
+        }
+
+    }
     public void Refresh() {
         InvokeAsync(StateHasChanged);
     }
@@ -75,6 +107,7 @@ else {
             StateHasChanged();
             TableroActual.nextTourn();
         }
+
     }
     public async Task TimeLapse() {
         while( TableroActual.cronometroFuncionando && !TableroActual.Logica.Victory() && !Presentacion.NingunaSeleccionada(TableroActual.Casillas) ) {

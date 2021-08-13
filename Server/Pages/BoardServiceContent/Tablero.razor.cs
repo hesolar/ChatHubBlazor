@@ -38,8 +38,9 @@ namespace Server.Pages.BoardServiceContent {
                                 TableroActual.casillasAbiertas = Presentacion.CasillasAbiertas(this.TableroActual.Casillas,TableroActual.Casillas.Count);
                             }
                             else TableroActual.casillasAbiertas--;
-
-                            ActualizarPuntuacion((long) (TableroActual.ValorCronometro.TotalSeconds));
+                            var pt = (float) TableroActual.ValorCronometro.TotalMilliseconds/(float)1000;
+                         
+                             ActualizarPuntuacion(pt);
 
                         }
                         else ActualizarPuntuacion(-5);
@@ -65,7 +66,9 @@ namespace Server.Pages.BoardServiceContent {
                         TableroActual.Logica.Flag(casilla.X,casilla.Y);
                         casilla.Flag();
                         casilla.Block();
-                        ActualizarPuntuacion((long) (2 * this.TableroActual.ValorCronometro.TotalSeconds));
+                        var pt = (float) TableroActual.ValorCronometro.TotalMilliseconds / (float) 500;
+
+                        ActualizarPuntuacion(pt);
                         TableroActual.casillasAbiertas--;
                     }
                     else ActualizarPuntuacion(-5);
@@ -95,14 +98,12 @@ namespace Server.Pages.BoardServiceContent {
                     }
                 });
                 mine.Block();
-                //if( !Presentacion.MovesLeftOnSelectedArea(TableroActual.Casillas) ) {
-                //    Presentacion.ActualizarVentanaDeslizante(TableroActual.Casillas);
-                //}
-                ActualizarPuntuacion((long) (TableroActual.ValorCronometro.TotalSeconds));
+                var pt = (float) TableroActual.ValorCronometro.TotalMilliseconds / (float) 1000;
+                ActualizarPuntuacion(pt);
             }
         }
 
-        public void ActualizarPuntuacion( long puntos ) {
+        public void ActualizarPuntuacion( float puntos ) {
             aciertoPuntuacion = puntos > 0;
             TableroActual.CurrentPlayerTourn().puntuacion += puntos;
         }

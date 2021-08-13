@@ -32,7 +32,7 @@
 
     Partida TableroActual = ps.Where(x => x.id == joinRoomId).First();
     
-    <Server.Pages.BoardServiceContent.BoardService_main roomId="joinRoomId" TableroActual="TableroActual" username="@username"></Server.Pages.BoardServiceContent.BoardService_main>
+    <Server.Pages.BoardServiceContent.BoardService_main roomId="@joinRoomId" TableroActual="TableroActual" username="@username"></Server.Pages.BoardServiceContent.BoardService_main>
     }
     else {
         <label> No rooms with that id!</label>
