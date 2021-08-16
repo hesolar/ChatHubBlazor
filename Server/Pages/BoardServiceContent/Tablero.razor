@@ -2,7 +2,7 @@
 @using Server.Data.Model.MinesweeperPresentation
 @inherits Tablerocs
 @using Server.Data.Services
-<h3>Tablero</h3>
+
 
 <div class="card" style=" align-items: start; width: fit-content; scroll-behavior: auto; border:dashed; align-content:center; align-content:center ">
     <BSContainer>
@@ -41,6 +41,7 @@
     <button hidden="@TableroActual.PartidaComenzada" disabled="@(TableroActual.PartidaComenzada || TableroActual[0].username!=username )" @onclick="ComenzarPartida">Star</button>
 
     <Progress_Component acierto="this.aciertoPuntuacion" puntuacion="this.TableroActual[username].puntuacion" logicaBuscaminas="TableroActual.Logica"></Progress_Component>
+    <Cronometro_Component dificultad="TableroActual.casillasAbiertas" rows="TableroActual.Logica.rows" timeToMove="TableroActual.timeToMove" valorCronometro="TableroActual.ValorCronometro"></Cronometro_Component>
 
 </div>
 

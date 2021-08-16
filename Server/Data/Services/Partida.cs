@@ -26,7 +26,7 @@ namespace Server.Data.Services {
             this.msgs = new List<String>();
             this.Casillas = createMineList(logica);
             this.casillasAbiertas = logica.rows * logica.rows;
-
+            this.ValorCronometro = new TimeSpan(0,0,Convert.ToInt32(timeToMove));
         }
 
         public bool PartidaComenzada = false;
@@ -112,39 +112,11 @@ namespace Server.Data.Services {
         public bool playerInRoom( String id ) {
             return this.Players.Where(x => x.username == id).Count() >0;
         }
-
-        
-
-
-
-        public double timeToMove = 5;
-        public TimeSpan ValorCronometro { get; set; } = new TimeSpan(0,0,5);
+        public double timeToMove = 15;
+        public TimeSpan ValorCronometro { get; set; } 
         
         public bool cronometroFuncionando = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        //public async Task StartTourn() {
-
-
-
-        //    while( !Logica.Victory() ) {
-
-        //        await TimeLapse();
-        //        //if( TableroActual[TableroActual.CurrentPlayerTourn].username == username ) {
-
-        //            Presentacion.ActualizarVentanaDeslizante(Casillas);
-        //            ValorCronometro = new TimeSpan(0,0,10);
-        //            cronometroFuncionando = true;
-
-        //            await TimeLapse();
-        //        //}
-        //    }
-
-        //}
-        
-
-
-
     }
 }
