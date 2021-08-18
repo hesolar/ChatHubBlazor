@@ -10,9 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BlazorStrap;
 using Microsoft.AspNetCore.ResponseCompression;
-using Server.Data.Services;
+using Server.Pages;
 
 namespace Server {
     public class Startup {
@@ -27,13 +26,12 @@ namespace Server {
         public void ConfigureServices( IServiceCollection services ) {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddBootstrapCss();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
-            services.AddSingleton<PartidaService>();
+            services.AddSingleton<IMessageQuery>(new IMessageQuery("C:\\Users\\hsolar\\Source\\Repos\\MinesweeperMultiplayerDemoBlazor\\Server\\msgs.txt"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
